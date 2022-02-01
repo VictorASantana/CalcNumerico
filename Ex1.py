@@ -64,3 +64,10 @@ def metodo_das_potencias(A, x0):
 
         erro_autovetor = np.linalg.norm(Xk - autovetores[0])
         i += 1
+
+
+def calcula_parada(x_k, x_converge, epsilon):
+    if np.linalg.norm(x_k - x_converge) < epsilon:
+        return True
+    else:
+        return False
