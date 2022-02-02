@@ -14,13 +14,12 @@
 # np.norm: retorna norma/modulo do vetor
 
 # from matplotlib import *
-from matplotlib.pyplot import xkcd
 import numpy as np
 
-itmax = 30
+itmax = 70
 epsilon = 10**(-15)
 
-n = 8
+n = 3
 
 A = np.array([[-2, -4, 2], [-2, 1, 2], [4, 2, 5]])
 
@@ -28,9 +27,28 @@ x0 = np.random.rand(n, 1)
 
 B = np.random.rand(2, 2)
 
-autovalores, autovetores = np.linalg.eigh(A)
-
 # achar autovetor do maior autovalor
+
+
+def encontra_autovetor_dominante(matriz_A):
+    autovalores, autovetores = np.linalg.eig(matriz_A)
+
+    index = encontra_index_autovalor_dominante(autovalores)
+
+    return autovetores[index]
+
+
+def encontra_index_autovalor_dominante(autovalores):
+    index_autovalor_dominante = 0
+    autovalor_dominante = 0
+
+    for i in range(autovalores.size):
+        modulo_autovalor = np.abs(autovalores[i])
+        if (modulo_autovalor > autovalor_dominante):
+            autovalor_dominante = modulo_autovalor
+            index_autovalor_dominante = i
+
+    return index_autovalor_dominante
 
 
 def calcula_Xk(A, x0):
@@ -51,23 +69,25 @@ def calcula_Uk(Xk, A):
     return Uk
 
 
-def metodo_das_potencias(A, x0):
-    Uk = None
-    Xk = x0
+def metodo_das_potencias(matriz_A, vetor_x0):
+    autovalor_Uk = None
+    autovetor_Xk = vetor_x0
     i = 0
 
-    erro_autovetor = np.linalg.norm(x0 - autovetores[0])
+    autovetor_dominante = encontra_autovetor_dominante(matriz_A)
+
+    erro_autovetor = np.linalg.norm(vetor_x0 - autovetor_dominante)
 
     while(erro_autovetor > epsilon and i < itmax):
-        Xk = calcula_Xk(A, Xk)
-        Uk = calcula_Uk(Xk, A)
+        autovetor_Xk = calcula_Xk(matriz_A, autovetor_Xk)
+        autovalor_Uk = calcula_Uk(autovetor_Xk, matriz_A)
 
-        erro_autovetor = np.linalg.norm(Xk - autovetores[0])
+        erro_autovetor = np.linalg.norm(autovetor_Xk - autovetor_dominante)
         i += 1
 
+    return autovalor_Uk
 
-def calcula_parada(x_k, x_converge, epsilon):
-    if np.linalg.norm(x_k - x_converge) < epsilon:
-        return True
-    else:
-        return False
+
+Uk_final = metodo_das_potencias(A, x0)
+
+print("O autovalor Uk obtido é:", Uk_final[0][0])
