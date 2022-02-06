@@ -24,13 +24,86 @@ def calcula_parada(x_k, x_converge, epsilon):
         return False
 
 #Calcula o sistema (3) - método SOR
-def calcula_SOR(matriz_A, x_k):
-    #Uma vez completa essa função, meio caminho estará andado
-    x_k_mais_1 = 0
-    return x_k_mais_1
+def calcula_SOR(matriz_A, n, vetor_b):
+    #vetor_b = np.ones((n,1))
+    vetor_x = np.zeros((n,1))
+    soma_atual = 0
+    soma_anterior = 0
+    elemento_diagonal = 0
+    omega = 1 + np.random.rand()
+    i = 0
+    k = 0
+    #A iteração abaixo deve ser realizada num número limitado de vezes
+    while True:
+        for vetor_atual in matriz_A:
+            for j in range(vetor_atual.size):
+                if i > j:
+                    soma_atual = soma_atual + vetor_atual[j]*vetor_x[j]
+                elif i < j:
+                    soma_anterior = soma_anterior + vetor_atual[j]*vetor_x[j]
+                else:
+                    elemento_diagonal = vetor_atual[j]
+            print("soma atual: ")
+            print(soma_atual)
+            print("\n soma anterior: ")
+            print(soma_anterior)
+            vetor_x[i] = (1 - omega)*vetor_x[i] + (omega/elemento_diagonal)*(vetor_b[i] - soma_atual - soma_anterior)
+            print("\n b[i]: ")
+            print(vetor_b[i])
+            print(vetor_x[i])
+            soma_atual = 0
+            soma_anterior = 0
+            i = i + 1
+        #vetor_b = vetor_x/np.linalg.norm(vetor_x)
+        k = k + 1
+        i = 0
+        if k > 5:
+            break
+    print(vetor_x)
+
+
 
 
 #Calcula a aproximação para \lambda_n^{-1} na k-ésima operação
 def calcula_autovalor(x_k, x_k_mais_1):
     mu_k = np.dot(x_k.T, x_k_mais_1)/np.dot(x_k.T, x_k)
     return mu_k
+
+#Se M < 1, então o método GS converge para a solução
+def criteiro_de_Sassenfeld(matriz_A, n):
+    vetor_beta = np.zeros((n,1))
+    beta_atual = 0
+    beta_maximo = 0
+    i = 0
+    for vetor_atual in matriz_A:
+        for j in range(vetor_atual.size):
+            if i > j:
+                if vetor_atual[j] > 0:
+                    beta_atual = beta_atual + vetor_atual[j]*vetor_beta[j]
+                else:
+                    beta_atual = beta_atual - vetor_atual[j] * vetor_beta[j]
+            elif i < j:
+                if vetor_atual[j] > 0:
+                    beta_atual = beta_atual + vetor_atual[j]
+                else:
+                    beta_atual = beta_atual - vetor_atual[j]
+            else:
+                elemento_diagonal = vetor_atual[j]
+        vetor_beta[i] = beta_atual/elemento_diagonal
+        beta_atual = 0
+        if beta_maximo < vetor_beta[i]:
+            beta_maximo = vetor_beta[i]
+        i = i + 1
+    print("O valor de beta_maximo é: ")
+    print(beta_maximo)
+
+#Função main
+n = 3
+matriz_A = np.array([[4, 1, 1],[-2, 5, 1],[3, 1, 6]])
+vetor_b = np.array([5, 0, -6.5])
+calcula_SOR(matriz_A, n, vetor_b)
+
+
+
+
+
