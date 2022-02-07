@@ -24,13 +24,15 @@ def calcula_parada(x_k, x_converge, epsilon):
         return False
 
 #Calcula o sistema (3) - método SOR
-def calcula_SOR(matriz_A, n, vetor_b):
-    #vetor_b = np.ones((n,1))
-    vetor_x = np.zeros((n,1))
+def calcula_SOR(matriz_A, n):
+    vetor_b = np.random.rand(n,1)
+    vetor_x = np.empty((n,1))
     soma_atual = 0
     soma_anterior = 0
     elemento_diagonal = 0
-    omega = 1 + np.random.rand()
+    omega = 1
+    print("omega: ")
+    print(omega)
     i = 0
     k = 0
     #A iteração abaixo deve ser realizada num número limitado de vezes
@@ -43,30 +45,33 @@ def calcula_SOR(matriz_A, n, vetor_b):
                     soma_anterior = soma_anterior + vetor_atual[j]*vetor_x[j]
                 else:
                     elemento_diagonal = vetor_atual[j]
-            print("soma atual: ")
-            print(soma_atual)
-            print("\n soma anterior: ")
-            print(soma_anterior)
-            vetor_x[i] = (1 - omega)*vetor_x[i] + (omega/elemento_diagonal)*(vetor_b[i] - soma_atual - soma_anterior)
-            print("\n b[i]: ")
-            print(vetor_b[i])
-            print(vetor_x[i])
+            vetor_x[i] = (1 - omega)*vetor_b[i] + (omega/elemento_diagonal)*(vetor_b[i] - soma_atual - soma_anterior)
             soma_atual = 0
             soma_anterior = 0
             i = i + 1
-        #vetor_b = vetor_x/np.linalg.norm(vetor_x)
+        if calcula_parada(vetor_x, vetor_b, 0.1):
+            print("mu calculado pelo criterio de parada")
+            mu_k = calcula_autovalor(vetor_b, vetor_x)
+            break
+        if k > 80:
+            print("mu calculado por excesso de iterações")
+            mu_k = calcula_autovalor(vetor_b, vetor_x)
+            break
+        for l in range(vetor_x.size):
+            vetor_b[l] = vetor_x[l]/np.linalg.norm(vetor_x)
         k = k + 1
         i = 0
-        if k > 5:
-            break
-    print(vetor_x)
+
+
+    return mu_k
 
 
 
 
 #Calcula a aproximação para \lambda_n^{-1} na k-ésima operação
 def calcula_autovalor(x_k, x_k_mais_1):
-    mu_k = np.dot(x_k.T, x_k_mais_1)/np.dot(x_k.T, x_k)
+    x_k_transposta = x_k.T
+    mu_k = np.matmul(x_k_transposta, x_k_mais_1)/np.matmul(x_k_transposta, x_k)
     return mu_k
 
 #Se M < 1, então o método GS converge para a solução
@@ -98,11 +103,18 @@ def criteiro_de_Sassenfeld(matriz_A, n):
     print(beta_maximo)
 
 #Função main
+#n = np.random.randint(7, 12)
 n = 3
-matriz_A = np.array([[4, 1, 1],[-2, 5, 1],[3, 1, 6]])
-vetor_b = np.array([5, 0, -6.5])
-calcula_SOR(matriz_A, n, vetor_b)
-
+B = np.array([[1, 0, 1], [1, 1, 0], [0, 0, 1]])
+identidade = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+matriz_A = B + B.T + n*identidade
+print(matriz_A)
+print(np.linalg.eig(np.linalg.inv(matriz_A)))
+print("\n Calculado: \n")
+criteiro_de_Sassenfeld(matriz_A, n)
+mu = calcula_SOR(matriz_A, n)
+print("\nautovalor dominante: ")
+print(mu)
 
 
 
