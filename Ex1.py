@@ -37,6 +37,15 @@ B = np.random.rand(n, n)
 
 # calculo dos valores de referencia
 
+autovalores, autovetores_array = np.linalg.eig(A)
+
+for i in range(0, autovalores.size):
+    print("AVAL: ")
+    print(autovalores[i])
+    print("AVET: ")
+    print(autovetores_array[i])
+    print("\n")
+
 
 def encontra_autovetor_dominante(matriz_A):
     autovalores, autovetores_array = np.linalg.eig(matriz_A)
@@ -46,7 +55,7 @@ def encontra_autovetor_dominante(matriz_A):
     index = encontra_index_autovalor_dominante(autovalores)
 
     for i in range(0, n):
-        autovetor_dominante[i][0] = autovetores_array[index][i]
+        autovetor_dominante[i][0] = autovetores_array[i][index]
 
     return autovetor_dominante
 
@@ -123,14 +132,30 @@ def calcula_Uk(Xk, A):
 
     Uk = np.matmul(Xk_tranposta, produto_A_Xk) / np.matmul(Xk_tranposta, Xk)
 
-    return Uk
+    print(Uk[0][0])
+
+    return Uk[0][0]
 
 
 # calculos de erros de autovetor e autovalor
 
 
 def calcula_erro_autovetor(vetor_xk, autovetor_dominante):
-    sub = vetor_xk - autovetor_dominante
+
+    modulo_autovetor_dominante = np.zeros(shape=(n, 1))
+
+    for i in range(0, n):
+        modulo_autovetor_dominante[i][0] = np.abs(autovetor_dominante[i][0])
+
+    sub = vetor_xk - modulo_autovetor_dominante
+
+    # print("Xk: ")
+    # print(vetor_xk)
+    # print("AVD: ")
+    # print(autovetor_dominante)
+    # print("Sub: ")
+    # print(sub)
+    # print("\n")
 
     erro_autovetor = np.linalg.norm(sub)
 
@@ -145,7 +170,7 @@ def calcula_erro_autovalor(autovalor_uk, autovalor_dominante):
 
 # plotagem de grafico
 
-x_iteracoes = 0
+n_iteracoes = 0
 y_erro_autovalor = []
 y_erro_autovetor = []
 
@@ -154,25 +179,29 @@ def plotagem_grafico_erros(matriz_A):
     fig = plt.figure(figsize=(8, 6))
 
     y_erros_assintoticos_simples = calcula_erros_assintoticos(
-        matriz_A, itmax)
+        matriz_A, n_iteracoes)
 
     y_erros_assintoticos_quadraticos = []
     for erro in y_erros_assintoticos_simples:
         erro_quadratico = erro**2
         y_erros_assintoticos_quadraticos.append(erro_quadratico)
 
-    array_iteracoes = np.array(range(0, itmax))
-    array_iteracoes = array_iteracoes.T
+    array_iteracoes = np.array(range(0, n_iteracoes))
 
-    plt.plot(array_iteracoes, y_erro_autovalor, color='black')
-    plt.plot(array_iteracoes, y_erro_autovetor, color='green')
+    plt.plot(array_iteracoes, y_erro_autovalor,
+             color='black', label="Erro autovalor")
+    plt.plot(array_iteracoes, y_erro_autovetor,
+             color='green', label="Erro autovetor")
     plt.plot(array_iteracoes,
-             y_erros_assintoticos_simples, color='blue')
+             y_erros_assintoticos_simples, color='blue', label=r"$\|λ_{2}/λ_{1}\|^{k}$")
     plt.plot(array_iteracoes,
-             y_erros_assintoticos_quadraticos, color='red')
+             y_erros_assintoticos_quadraticos, color='red', label=r"$\|λ_{2}/λ_{1}\|^{2k}$")
     plt.yscale("log")
     plt.xlabel("Iterações")
     plt.ylabel("Erro L2")
+    plt.legend(loc="lower left")
+
+    # print(y_erro_autovalor)
 
     plt.show()
 
@@ -182,37 +211,31 @@ def plotagem_grafico_erros(matriz_A):
 def metodo_das_potencias(matriz_A, vetor_x0):
     autovalor_Uk = None
     autovetor_Xk = vetor_x0
-    i = 0
+    global n_iteracoes
 
     autovetor_dominante = encontra_autovetor_dominante(matriz_A)
     autovalor_dominante = encontra_autovalor_dominante(matriz_A)
 
-    erro_autovetor = calcula_erro_autovetor(x0, autovetor_dominante)
+    erro_autovetor = calcula_erro_autovetor(vetor_x0, autovetor_dominante)
 
-    while(erro_autovetor > epsilon and i < itmax):
+    while(erro_autovetor > epsilon and n_iteracoes < itmax):
         autovetor_Xk = calcula_Xk(matriz_A, autovetor_Xk)
         autovalor_Uk = calcula_Uk(autovetor_Xk, matriz_A)
-
-        print(autovetor_Xk)
 
         erro_autovetor = calcula_erro_autovetor(
             autovetor_Xk, autovetor_dominante)
         erro_autovalor = calcula_erro_autovalor(
-            autovalor_Uk[0][0], autovalor_dominante)
+            autovalor_Uk, autovalor_dominante)
 
         y_erro_autovetor.append(erro_autovetor)
         y_erro_autovalor.append(erro_autovalor)
 
-        i += 1
+        n_iteracoes += 1
 
-    print(autovetor_dominante)
-
-    # = i
-
-    return autovalor_Uk[0][0]
-
+    return autovalor_Uk
 
 # chamada das funcoes para testagem
+
 
 Uk_final = metodo_das_potencias(A, x0)
 
