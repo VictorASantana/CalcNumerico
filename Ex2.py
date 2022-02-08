@@ -24,18 +24,16 @@ def calcula_parada(x_k, x_converge, epsilon):
         return False
 
 #Calcula o sistema (3) - método SOR
-def calcula_SOR(matriz_A, n):
+def calcula_SOR(matriz_A, n, epsilon, num_interacoes):
     vetor_b = np.random.rand(n,1)
     vetor_x = np.empty((n,1))
     soma_atual = 0
     soma_anterior = 0
     elemento_diagonal = 0
     omega = 1
-    print("omega: ")
-    print(omega)
     i = 0
     k = 0
-    #A iteração abaixo deve ser realizada num número limitado de vezes
+    #A iteração abaixo deve ser realizada num número limitado em num_interações vezes
     while True:
         for vetor_atual in matriz_A:
             for j in range(vetor_atual.size):
@@ -49,12 +47,10 @@ def calcula_SOR(matriz_A, n):
             soma_atual = 0
             soma_anterior = 0
             i = i + 1
-        if calcula_parada(vetor_x, vetor_b, 0.1):
-            print("mu calculado pelo criterio de parada")
+        if calcula_parada(vetor_x, vetor_b, epsilon):
             mu_k = calcula_autovalor(vetor_b, vetor_x)
             break
-        if k > 80:
-            print("mu calculado por excesso de iterações")
+        if k > num_interacoes:
             mu_k = calcula_autovalor(vetor_b, vetor_x)
             break
         for l in range(vetor_x.size):
@@ -101,9 +97,16 @@ def criteiro_de_Sassenfeld(matriz_A, n):
         i = i + 1
     print("O valor de beta_maximo é: ")
     print(beta_maximo)
+    if beta_maximo < 1:
+        print("O método SOR converge pelo critério de Sassenfeld")
+        return True
+    else:
+        print("O critério de Sassenfeld não permite afirmar se o método SOR converge ou não.")
+        return False
 
 #Função main
-#n = np.random.randint(7, 12)
+
+epsilon = 10**(-15)
 n = 3
 B = np.array([[1, 0, 1], [1, 1, 0], [0, 0, 1]])
 identidade = np.array([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
@@ -111,8 +114,10 @@ matriz_A = B + B.T + n*identidade
 print(matriz_A)
 print(np.linalg.eig(np.linalg.inv(matriz_A)))
 print("\n Calculado: \n")
-criteiro_de_Sassenfeld(matriz_A, n)
-mu = calcula_SOR(matriz_A, n)
+if criteiro_de_Sassenfeld(matriz_A, n):
+    mu = calcula_SOR(matriz_A, n, epsilon, 40)
+else:
+    mu = calcula_SOR(matriz_A, n, epsilon, 70)
 print("\nautovalor dominante: ")
 print(mu)
 
