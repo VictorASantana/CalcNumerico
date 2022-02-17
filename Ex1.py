@@ -6,7 +6,7 @@ import numpy as np
 # dados para calculos
 operacao = 1
 
-itmax = 50
+itmax = 70
 epsilon = 10**(-15)
 
 n = 3
@@ -28,7 +28,7 @@ A = np.array([[-2, -4, 2], [-2, 1, 2], [4, 2, 5]])
 def encontra_autovetor_dominante(matriz_A):
     autovalores, autovetores_array = np.linalg.eig(matriz_A)
 
-    autovetor_dominante = np.zeros(shape=(n, 1))
+    autovetor_dominante = np.zeros(shape=(len(matriz_A[0]), 1))
 
     index = encontra_index_autovalor_dominante(autovalores)
 
@@ -98,18 +98,18 @@ def calcula_erros_assintoticos(matriz_A, n_iteracoes):
 
 # calculo do vetor Xk que tende ao autovetor associado
 # ao autovalor dominante da matriz A
-def calcula_Xk(A, Xk):
+def calcula_Xk(matrizA, Xk):
 
-    produto = np.matmul(A, Xk)
+    produto = np.matmul(matrizA, Xk)
     Xk = produto / np.linalg.norm(produto)
 
     return Xk
 
 
 # calculo do valor Uk que tende ao autovalor dominante lambda 1
-def calcula_Uk(Xk, A):
+def calcula_Uk(Xk, matrizA):
     Xk_tranposta = Xk.T
-    produto_A_Xk = np.matmul(A, Xk)
+    produto_A_Xk = np.matmul(matrizA, Xk)
 
     Uk = np.matmul(Xk_tranposta, produto_A_Xk) / np.matmul(Xk_tranposta, Xk)
 
@@ -120,12 +120,7 @@ def calcula_Uk(Xk, A):
 # obtido pela funcao numpy.linalg.eig
 def calcula_erro_autovetor(vetor_xk, autovetor_dominante):
 
-    modulo_autovetor_dominante = np.zeros(shape=(n, 1))
-
-    for i in range(0, n):
-        modulo_autovetor_dominante[i][0] = np.abs(autovetor_dominante[i][0])
-
-    sub = vetor_xk - modulo_autovetor_dominante
+    sub = vetor_xk - autovetor_dominante
 
     erro_autovetor = np.linalg.norm(sub)
 
@@ -140,7 +135,6 @@ def calcula_erro_autovalor(autovalor_uk, autovalor_dominante):
 
 
 # arrays para a plotagem de graficos
-n_iteracoes = 0
 y_erro_autovalor = []
 y_erro_autovetor = []
 
@@ -148,6 +142,7 @@ y_erro_autovetor = []
 def plotagem_grafico_erros(matriz_A):
     fig = plt.figure(figsize=(8, 6))
 
+    n_iteracoes = len(y_erro_autovalor)
     y_erros_assintoticos_simples = calcula_erros_assintoticos(
         matriz_A, n_iteracoes)
 
@@ -175,16 +170,16 @@ def plotagem_grafico_erros(matriz_A):
 
 # metodo das potencias implementado
 def metodo_das_potencias(matriz_A, vetor_x0):
-    autovalor_Uk = None
+    autovalor_Uk = 0
     autovetor_Xk = vetor_x0
-    global n_iteracoes
 
     autovetor_dominante = encontra_autovetor_dominante(matriz_A)
     autovalor_dominante = encontra_autovalor_dominante(matriz_A)
 
     erro_autovetor = calcula_erro_autovetor(vetor_x0, autovetor_dominante)
 
-    while(erro_autovetor > epsilon and n_iteracoes < itmax):
+    i = 0
+    while(erro_autovetor > epsilon and i < itmax):
         autovetor_Xk = calcula_Xk(matriz_A, autovetor_Xk)
         autovalor_Uk = calcula_Uk(autovetor_Xk, matriz_A)
 
@@ -196,14 +191,16 @@ def metodo_das_potencias(matriz_A, vetor_x0):
         y_erro_autovetor.append(erro_autovetor)
         y_erro_autovalor.append(erro_autovalor)
 
-        n_iteracoes += 1
+        i += 1
 
-    return autovalor_Uk
+    return autovalor_Uk, autovetor_Xk
 
 
-Uk_final = metodo_das_potencias(A, x0)
+Uk_final = metodo_das_potencias(A, x0)[0]
 
 plotagem_grafico_erros(A)
 
-print("O valor do autovalor aproximado é de: ", Uk_final)
+#print("O valor do autovalor aproximado é de: ", Uk_final)
 
+
+# %%
