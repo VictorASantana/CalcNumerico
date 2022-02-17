@@ -144,7 +144,6 @@ n_iteracoes = 0
 y_erro_autovalor = []
 y_erro_autovetor = []
 
-
 # funcao que realiza a plotagem dos graficos requeridos
 def plotagem_grafico_erros(matriz_A):
     fig = plt.figure(figsize=(8, 6))
