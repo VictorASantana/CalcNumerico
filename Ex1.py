@@ -3,26 +3,16 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# dados para calculos
-operacao = 1
+# ===========================================================================
+# Dados para criterio de parada do Metodo das Potencias
+# ===========================================================================
 
 itmax = 70
-epsilon = 10**(-15)
+epsilon = np.sqrt(10) * 10**(-15)
 
-n = 3
-x0 = np.random.randint(size=(n, 1), low=0, high=100)
-B = np.random.rand(n, n)
-
-A = np.array([[-2, -4, 2], [-2, 1, 2], [4, 2, 5]])
-
-# Modo de operacao 1
-# A = B + B.T
-
-# # Modo de operacao 2
-# A = np.random.rand(n, n)
-# print(A)
-# print(np.linalg.eig(A)[0])
-
+# ===========================================================================
+# Calculo dos valores e vetores de parametro para o calculo dos erros
+# ===========================================================================
 
 # calculo do autovetor associado ao autovalor dominante da matriz A
 def encontra_autovetor_dominante(matriz_A):
@@ -32,6 +22,7 @@ def encontra_autovetor_dominante(matriz_A):
 
     index = encontra_index_autovalor_dominante(autovalores)
 
+    n = len(matriz_A[0])
     for i in range(0, n):
         autovetor_dominante[i][0] = autovetores_array[i][index]
 
@@ -82,7 +73,10 @@ def encontra_lambda_2(matriz_A):
 
     return lambda_2
 
-# calcula erro assintotico do metodo a partir dos autovalores
+# ===========================================================================
+# Erro assintotico a ser usado no grafico
+# ===========================================================================
+
 def calcula_erros_assintoticos(matriz_A, n_iteracoes):
     lambda_1 = encontra_autovalor_dominante(matriz_A)
     lambda_2 = encontra_lambda_2(matriz_A)
@@ -95,6 +89,10 @@ def calcula_erros_assintoticos(matriz_A, n_iteracoes):
 
     return erros_assintoticos_por_iteracao
 
+# ===========================================================================
+# Calculo do autovetor e autovalor dominantes 
+# a cada iteracao do Metodo das Potencias
+# ===========================================================================
 
 # calculo do vetor Xk que tende ao autovetor associado
 # ao autovalor dominante da matriz A
@@ -115,12 +113,20 @@ def calcula_Uk(Xk, matrizA):
 
     return Uk[0][0]
 
+# ===========================================================================
+# Calculo dos erros a cada iteracao do Metodo das Potencias
+# ===========================================================================
 
 # calculo de erro do autovetor calculado em relacao ao teorico
 # obtido pela funcao numpy.linalg.eig
 def calcula_erro_autovetor(vetor_xk, autovetor_dominante):
+    n = vetor_xk.shape[0]
+    modulo_autovetor_dominante = np.zeros(shape=(n, 1))
 
-    sub = vetor_xk - autovetor_dominante
+    for i in range(0, n):
+        modulo_autovetor_dominante[i][0] = np.abs(autovetor_dominante[i][0])
+
+    sub = vetor_xk - modulo_autovetor_dominante
 
     erro_autovetor = np.linalg.norm(sub)
 
@@ -133,6 +139,9 @@ def calcula_erro_autovalor(autovalor_uk, autovalor_dominante):
 
     return erro_autovalor
 
+# ===========================================================================
+# Funcoes e constantes usadas para plotagem do grafico via MatPlotLib
+# ===========================================================================
 
 # arrays para a plotagem de graficos
 y_erro_autovalor = []
@@ -168,7 +177,10 @@ def plotagem_grafico_erros(matriz_A):
 
     plt.show()
 
-# metodo das potencias implementado
+# ===========================================================================
+# Implementacao do Metodo das Potencias geral a partir das demais funcoes
+# ===========================================================================
+
 def metodo_das_potencias(matriz_A, vetor_x0):
     autovalor_Uk = 0
     autovetor_Xk = vetor_x0
@@ -195,12 +207,111 @@ def metodo_das_potencias(matriz_A, vetor_x0):
 
     return autovalor_Uk, autovetor_Xk
 
+# ===========================================================================
+# Funcoes para exibicao dos resultados
+# ===========================================================================
 
-Uk_final = metodo_das_potencias(A, x0)[0]
+def resultado_item_1():
+    n = 10
+    matriz_B = np.random.rand(n, n)
+    vetor_x0 = np.random.rand(n, 1)
+    matriz_A = np.matmul(matriz_B, matriz_B.T)
 
-plotagem_grafico_erros(A)
+    Uk_final = metodo_das_potencias(matriz_A, vetor_x0)[0]
+    plotagem_grafico_erros(matriz_A)
+    print("O valor do autovalor aproximado é de: ", Uk_final)
 
-#print("O valor do autovalor aproximado é de: ", Uk_final)
+def resultado_item_2_1():
+    n = 7
+    matriz_B = np.random.rand(n, n)
 
+    # λ1 = 95 e λ2 = 92
+    matriz_D = np.array(
+        [[2, 0, 0, 0, 0, 0, 0],
+        [0, 13, 0, 0, 0, 0, 0],
+        [0, 0, 92, 0, 0, 0, 0],
+        [0, 0, 0, 32, 0, 0, 0],
+        [0, 0, 0, 0, 76, 0, 0],
+        [0, 0, 0, 0, 0, 95, 0],
+        [0, 0, 0, 0, 0, 0, 22]]
+    )
+    
+    vetor_x0 = np.random.rand(n, 1)
+
+    matriz_interm = np.matmul(matriz_B, matriz_D)
+
+    inv_matriz_B = np.linalg.inv(matriz_B)
+    matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+
+    Uk_final = metodo_das_potencias(matriz_A, vetor_x0)[0]
+    plotagem_grafico_erros(matriz_A)
+    print("O valor do autovalor aproximado é de: ", Uk_final)
+
+def resultado_item_2_2():
+    n = 7
+    matriz_B = np.random.rand(n, n)
+
+    # λ1 = 92 e λ2 = 13
+    matriz_D = np.array(
+        [[2, 0, 0, 0, 0, 0, 0],
+        [0, 13, 0, 0, 0, 0, 0],
+        [0, 0, 92, 0, 0, 0, 0],
+        [0, 0, 0, 10, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0, 8, 0],
+        [0, 0, 0, 0, 0, 0, 11]]
+    )
+    
+    vetor_x0 = np.random.rand(n, 1)
+
+    matriz_interm = np.matmul(matriz_B, matriz_D)
+
+    inv_matriz_B = np.linalg.inv(matriz_B)
+    matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+
+    Uk_final = metodo_das_potencias(matriz_A, vetor_x0)[0]
+    plotagem_grafico_erros(matriz_A)
+    print("O valor do autovalor aproximado é de: ", Uk_final)
+
+# ===========================================================================
+# Funcao de menu para chamada das funcoes via terminal
+# ===========================================================================
+
+def menu():
+    operacao = 1
+
+    print("Escolha o modo de operacao do algoritmo")
+    print("1) A = B * Bt")
+    print("""    --> Matriz B de formato 10x10
+    --> Matriz B composta de coeficientes aleatorioes entre 0 e 1
+    --> Bt representa a transposta de B\n""")
+
+    print("2) A = B * D * B^(-1)")
+    print("""    --> Matriz D diagonal com esta composta de coeficiente estritamente positivos distintos
+    --> Matriz B de formato 7x7
+    --> Matriz B composta de coeficientes aleatorioes entre 0 e 1
+    --> B^(-1) representa a inversa de B
+    --> λ1 e λ2 sao relativamente proximos\n""")
+
+    print("3) A = B * D * B^(-1)")
+    print("""    --> Matriz D diagonal com esta composta de coeficiente estritamente positivos distintos
+    --> Matriz B de formato 7x7
+    --> Matriz B composta de coeficientes aleatorioes entre 0 e 1
+    --> B^(-1) representa a inversa de B
+    --> λ1 e λ2 sao relativamente distantes\n""")
+
+    operacao = int(input("Modo de operacao: "))
+
+    if(operacao == 1):
+        resultado_item_1()
+    elif(operacao == 2):
+        resultado_item_2_1()
+    elif(operacao == 3):
+        resultado_item_2_2()
+    else:
+        print("Modo de operacao escolhido invalido.")
+
+# Descomentar somente para testagem do exercicio 1
+#menu()
 
 # %%
