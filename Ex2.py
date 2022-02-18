@@ -28,7 +28,8 @@ def calcula_autovetor_dominante(matriz_A):
     autovetor_dominante = np.zeros(shape=(n, 1))
     index = encontra_index_autovalor_dominante(autovalores)
     for i in range(0, n):
-        autovetor_dominante[i][0] = autovetores_array[index][i]
+        autovetor_dominante[i][0] = autovetores_array[i][index]
+    print(autovetor_dominante)
     return autovetor_dominante
 
 def calcula_autovalor_dominante(matriz_A):
@@ -62,6 +63,8 @@ def calcula_SOR(matriz_A, n, epsilon, num_interacoes):
     erro_vetor = 0
     autovalor_dominante = calcula_autovalor_dominante(np.linalg.inv(matriz_A))
     autovetor_dominante = calcula_autovetor_dominante(np.linalg.inv(matriz_A))
+    print("Dominante: ")
+    print(autovetor_dominante)
     i = 0
     global k
     #A iteração abaixo deve ser realizada num número limitado em num_interações vezes
@@ -81,11 +84,15 @@ def calcula_SOR(matriz_A, n, epsilon, num_interacoes):
         mu_k = calcula_autovalor(vetor_b, vetor_x)
         erro_valor = erro_autovalor(mu_k, autovalor_dominante)
         erros_autovalor.append(erro_valor)
-        erro_vetor = erro_autovetor(vetor_b, autovetor_dominante)
+        erro_vetor = erro_autovetor((vetor_x / np.linalg.norm(vetor_x)), autovetor_dominante)
         erros_autovetor.append(erro_vetor)
         if calcula_parada(vetor_x, vetor_b, epsilon):
+            print("Calculado: ")
+            print(vetor_x / np.linalg.norm(vetor_x))
             break
         if k > num_interacoes:
+            print("Calculado: ")
+            print(vetor_x/np.linalg.norm(vetor_x))
             break
         for l in range(vetor_x.size):
             vetor_b[l] = vetor_x[l] / np.linalg.norm(vetor_x)
@@ -147,8 +154,13 @@ def erro_autovetor(vetor_xk, autovetor_dominante):
 
     for i in range(0, n):
         modulo_autovetor_dominante[i][0] = np.abs(autovetor_dominante[i][0])
-        modulo_xk = np.abs(vetor_xk[i][0])
-
+        modulo_xk[i][0] = np.abs(vetor_xk[i][0])
+    print("Valor dominante: ")
+    print(modulo_autovetor_dominante)
+    print("Valor comparado sem modulo: ")
+    print(vetor_xk)
+    print("Valor comparado com modulo: ")
+    print(modulo_xk)
     sub = modulo_xk - modulo_autovetor_dominante
 
     erro_autovetor = np.linalg.norm(sub)
@@ -209,7 +221,7 @@ def plotagem_grafico_erros(matriz_A):
 
 #Função main
 epsilon = 10**(-15)
-n = 9
+n = 3
 k = 0
 n_iteracoes = 0
 B = np.random.rand(n, n)
@@ -232,5 +244,3 @@ print(mu)
 plotagem_grafico_erros(np.linalg.inv(matriz_A))
 
 #%%
-
-
