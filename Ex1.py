@@ -1,56 +1,34 @@
 # Arquivo referente ao Exercicio 1
-
-# Comandos uteis
-# .ndim : dimensao do array/matriz
-# .shape : indica o formato da matriz n x m
-# .[r, c] : saida é o elemento contido no posicao (r, c) *conta a partir de zero
-# .[:, c] : todos os elementos da coluna c, possivel de atribuir um valor a coluna c
-# .[r, a:b:c] : acessa elementos da coluna r, indo do elemento a até o b, pulando de c em c
-# np.zeros((n,m)) : inicializa uma matriz de zeros de dimensao n x m
-# np.ones((n, m)) : inicializa uma matriz de uns de dimensao n x m
-# np.full((n, m), a): inicializa uma matriz de dimensao n x m de valor a
-# np.full_like (A, b): inicializa uma matriz de mesmo tamanho de A com todos os valores b
-# np.random.randint()
-# np.norm: retorna norma/modulo do vetor
-
-# pylint --disable-msg-cat=C
 # %%
 import matplotlib.pyplot as plt
 import numpy as np
 
 # dados para calculos
+operacao = 1
 
-itmax = 50
+itmax = 70
 epsilon = 10**(-15)
 
 n = 3
+x0 = np.random.randint(size=(n, 1), low=0, high=100)
+B = np.random.rand(n, n)
 
 A = np.array([[-2, -4, 2], [-2, 1, 2], [4, 2, 5]])
 
-x0 = np.random.randint(size=(n, 1), low=0, high=100)
-
-B = np.random.rand(n, n)
-
+# Modo de operacao 1
 # A = B + B.T
 
-# achar autovetor do maior autovalor
-
-# calculo dos valores de referencia
-
-autovalores, autovetores_array = np.linalg.eig(A)
-
-for i in range(0, autovalores.size):
-    print("AVAL: ")
-    print(autovalores[i])
-    print("AVET: ")
-    print(autovetores_array[i])
-    print("\n")
+# # Modo de operacao 2
+# A = np.random.rand(n, n)
+# print(A)
+# print(np.linalg.eig(A)[0])
 
 
+# calculo do autovetor associado ao autovalor dominante da matriz A
 def encontra_autovetor_dominante(matriz_A):
     autovalores, autovetores_array = np.linalg.eig(matriz_A)
 
-    autovetor_dominante = np.zeros(shape=(n, 1))
+    autovetor_dominante = np.zeros(shape=(len(matriz_A[0]), 1))
 
     index = encontra_index_autovalor_dominante(autovalores)
 
@@ -59,7 +37,8 @@ def encontra_autovetor_dominante(matriz_A):
 
     return autovetor_dominante
 
-
+# retorna index do autovalor dominante dentro do array retornado
+# pela funcao numpy.linalg.eig
 def encontra_index_autovalor_dominante(autovalores):
     index_autovalor_dominante = 0
     autovalor_dominante = 0
@@ -72,7 +51,7 @@ def encontra_index_autovalor_dominante(autovalores):
 
     return index_autovalor_dominante
 
-
+# retorna autovalor dominante da matriz A
 def encontra_autovalor_dominante(matriz_A):
     autovalores = (np.linalg.eig(matriz_A))[0]
     autovalor_dominante = 0
@@ -84,7 +63,8 @@ def encontra_autovalor_dominante(matriz_A):
 
     return autovalor_dominante
 
-
+# encontra o segundo autovalor de maior módulo da matriz A
+# usado para calculo dos erros assintoticos
 def encontra_lambda_2(matriz_A):
     autovalores = (np.linalg.eig(matriz_A))[0]
 
@@ -102,7 +82,7 @@ def encontra_lambda_2(matriz_A):
 
     return lambda_2
 
-
+# calcula erro assintotico do metodo a partir dos autovalores
 def calcula_erros_assintoticos(matriz_A, n_iteracoes):
     lambda_1 = encontra_autovalor_dominante(matriz_A)
     lambda_2 = encontra_lambda_2(matriz_A)
@@ -116,68 +96,53 @@ def calcula_erros_assintoticos(matriz_A, n_iteracoes):
     return erros_assintoticos_por_iteracao
 
 
-# calculo de Xk
-def calcula_Xk(A, Xk):
+# calculo do vetor Xk que tende ao autovetor associado
+# ao autovalor dominante da matriz A
+def calcula_Xk(matrizA, Xk):
 
-    produto = np.matmul(A, Xk)
+    produto = np.matmul(matrizA, Xk)
     Xk = produto / np.linalg.norm(produto)
 
     return Xk
 
 
-# calculo de Uk
-def calcula_Uk(Xk, A):
+# calculo do valor Uk que tende ao autovalor dominante lambda 1
+def calcula_Uk(Xk, matrizA):
     Xk_tranposta = Xk.T
-    produto_A_Xk = np.matmul(A, Xk)
+    produto_A_Xk = np.matmul(matrizA, Xk)
 
     Uk = np.matmul(Xk_tranposta, produto_A_Xk) / np.matmul(Xk_tranposta, Xk)
-
-    print(Uk[0][0])
 
     return Uk[0][0]
 
 
-# calculos de erros de autovetor e autovalor
-
-
+# calculo de erro do autovetor calculado em relacao ao teorico
+# obtido pela funcao numpy.linalg.eig
 def calcula_erro_autovetor(vetor_xk, autovetor_dominante):
 
-    modulo_autovetor_dominante = np.zeros(shape=(n, 1))
-
-    for i in range(0, n):
-        modulo_autovetor_dominante[i][0] = np.abs(autovetor_dominante[i][0])
-
-    sub = vetor_xk - modulo_autovetor_dominante
-
-    # print("Xk: ")
-    # print(vetor_xk)
-    # print("AVD: ")
-    # print(autovetor_dominante)
-    # print("Sub: ")
-    # print(sub)
-    # print("\n")
+    sub = vetor_xk - autovetor_dominante
 
     erro_autovetor = np.linalg.norm(sub)
 
     return erro_autovetor
 
-
+# calculo de erro do autovalor calculado em relacao ao teorico
+# obtido pela funcao numpy.linalg.eig
 def calcula_erro_autovalor(autovalor_uk, autovalor_dominante):
     erro_autovalor = np.abs(autovalor_uk - autovalor_dominante)
 
     return erro_autovalor
 
 
-# plotagem de grafico
-
-n_iteracoes = 0
+# arrays para a plotagem de graficos
 y_erro_autovalor = []
 y_erro_autovetor = []
 
-
+# funcao que realiza a plotagem dos graficos requeridos
 def plotagem_grafico_erros(matriz_A):
     fig = plt.figure(figsize=(8, 6))
 
+    n_iteracoes = len(y_erro_autovalor)
     y_erros_assintoticos_simples = calcula_erros_assintoticos(
         matriz_A, n_iteracoes)
 
@@ -201,24 +166,20 @@ def plotagem_grafico_erros(matriz_A):
     plt.ylabel("Erro L2")
     plt.legend(loc="lower left")
 
-    # print(y_erro_autovalor)
-
     plt.show()
 
 # metodo das potencias implementado
-
-
 def metodo_das_potencias(matriz_A, vetor_x0):
-    autovalor_Uk = None
+    autovalor_Uk = 0
     autovetor_Xk = vetor_x0
-    global n_iteracoes
 
     autovetor_dominante = encontra_autovetor_dominante(matriz_A)
     autovalor_dominante = encontra_autovalor_dominante(matriz_A)
 
     erro_autovetor = calcula_erro_autovetor(vetor_x0, autovetor_dominante)
 
-    while(erro_autovetor > epsilon and n_iteracoes < itmax):
+    i = 0
+    while(erro_autovetor > epsilon and i < itmax):
         autovetor_Xk = calcula_Xk(matriz_A, autovetor_Xk)
         autovalor_Uk = calcula_Uk(autovetor_Xk, matriz_A)
 
@@ -230,16 +191,16 @@ def metodo_das_potencias(matriz_A, vetor_x0):
         y_erro_autovetor.append(erro_autovetor)
         y_erro_autovalor.append(erro_autovalor)
 
-        n_iteracoes += 1
+        i += 1
 
-    return autovalor_Uk
-
-# chamada das funcoes para testagem
+    return autovalor_Uk, autovetor_Xk
 
 
-Uk_final = metodo_das_potencias(A, x0)
+Uk_final = metodo_das_potencias(A, x0)[0]
 
 plotagem_grafico_erros(A)
+
+#print("O valor do autovalor aproximado é de: ", Uk_final)
 
 
 # %%
