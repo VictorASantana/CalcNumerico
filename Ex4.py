@@ -1,8 +1,14 @@
 # Arquivo referente ao exercicio 4
+# ***************************************************************************
+# * IMPORTANTE: para funcionamento, o arquivo utiliza a funcao              *
+# * metodo_das_potencias presente no arquivo Ex1.py e este deve estar       *
+# * no mesmo diretorio que o arquivo Ex4.py                                 *
+# ***************************************************************************
 # %%
+from tokenize import String
 import numpy as np
 import matplotlib.pyplot as plt
-import Ex1 as mdp
+from Ex1 import metodo_das_potencias
 
 # ===========================================================================
 # Exercicio 4.1
@@ -110,40 +116,40 @@ eps1 = np.array(
     [[0, 1],
      [1, 4],
      [4, 8],
-    [8, 12],
-    [2, 4],
-    [4, 7],
-    [7, 11],
-    [7, 14],
-    [3, 4],
-    [4, 6],
-    [6, 10],
-    [10, 13],
-    [5, 9],
-    [9, 12],
-    [12, 15],
-    [15, 16]]
+     [8, 12],
+     [2, 4],
+     [4, 7],
+     [7, 11],
+     [7, 14],
+     [3, 4],
+     [4, 6],
+     [6, 10],
+     [10, 13],
+     [5, 9],
+     [9, 12],
+     [12, 15],
+     [15, 16]]
 )
 
 # matriz de arestas que representa
 # a rede de metro 2
 eps2 = np.array(
     [[4, 6],
-    [6, 8],
-    [8, 10],
-    [10, 16],
-    [0, 1],
-    [1, 2],
-    [2, 3],
-    [3, 4],
-    [3, 5],
-    [5, 7],
-    [7, 9],
-    [9, 12],
-    [11, 12],
-    [12, 13],
-    [13, 14],
-    [14, 15]]
+     [6, 8],
+     [8, 10],
+     [10, 16],
+     [0, 1],
+     [1, 2],
+     [2, 3],
+     [3, 4],
+     [3, 5],
+     [5, 7],
+     [7, 9],
+     [9, 12],
+     [11, 12],
+     [12, 13],
+     [13, 14],
+     [14, 15]]
 )
 
 # nVertices = nEstacoes/linha * linha - nConexoes
@@ -168,15 +174,15 @@ def calculaMatrizAdjacencia(matrizArestas):
 # Aplicação do método das potências
 # ===========================================================================s
 
-def comparaAutovaloresDominantesRedes():
-    mAdjRede1 = calculaMatrizAdjacencia(eps1)
-    mAdjRede2 = calculaMatrizAdjacencia(eps2)
+def comparaAutovaloresDominantesRedes(mArest1, mArest2):
+    mAdjRede1 = calculaMatrizAdjacencia(mArest1)
+    mAdjRede2 = calculaMatrizAdjacencia(mArest2)
 
     # vetor inicial para o metodo das potencias
     vetorIni = np.random.rand(nVertices, 1)
 
-    autovalDomRede1 = mdp.metodo_das_potencias(mAdjRede1, vetorIni)[0]
-    autovalDomRede2 = mdp.metodo_das_potencias(mAdjRede2, vetorIni)[0]
+    autovalDomRede1 = metodo_das_potencias(mAdjRede1, vetorIni)[0]
+    autovalDomRede2 = metodo_das_potencias(mAdjRede2, vetorIni)[0]
 
     print("λ(G1) = " + str(autovalDomRede1))
     print("λ(G2) = " + str(autovalDomRede2))
@@ -201,7 +207,7 @@ def calculaVerticeMaiorCentralidade(matrizArestas):
     # vetor inicial para o metodo das potencias
     vetorIni = np.random.rand(nVertices, 1)
 
-    autovalDom, autovetDom = mdp.metodo_das_potencias(mAdjRede, vetorIni)
+    autovalDom, autovetDom = metodo_das_potencias(mAdjRede, vetorIni)
 
     # vetor com centralidades de autovetor para cada vertice
     vetorCentralidades = np.zeros(shape=(nVertices, 1))
@@ -224,5 +230,45 @@ def calculaVerticeMaiorCentralidade(matrizArestas):
 
     return verticeMaiorCentralidade
 
+
+# ===========================================================================
+# Funcao de menu para chamada das funcoes via terminal
+# ===========================================================================
+
+def menu():
+    operacao = 1
+
+    print("Escolha o modo de operacao do algoritmo")
+    print("1) Plotagem da Rede 1")
+    print("2) Plotagem da Rede 2")
+    print("3) Imprime matriz de arestas da Rede 1")
+    print("4) Imprime matriz de arestas da Rede 2")
+    print("5) Comparacao de autovalores dominantes em cada rede")
+    print("6) Determina vertice de maior centralidade da Rede 1")
+    print("7) Determina vertice de maior centralidade da Rede 2")
+
+    operacao = int(input("Modo de operacao: "))
+
+    if operacao == 1:
+        plotagemRede1()
+    elif operacao == 2:
+        plotagemRede2()
+    elif operacao == 3:
+        print(eps1)
+    elif operacao == 4:
+        print(eps2)
+    elif operacao == 5:
+        comparaAutovaloresDominantesRedes(eps1, eps2)
+    elif operacao == 6:
+        vertice = calculaVerticeMaiorCentralidade(eps1)
+        print("Vertice de maior centralidade de G1: " + str(vertice))
+    elif operacao == 7:
+        vertice = calculaVerticeMaiorCentralidade(eps2)
+        print("Vertice de maior centralidade de G1: " + str(vertice))
+    else:
+        print("Modo de operacao invalido")
+
+# Descomentar para testagem do algoritmo
+#menu()
 
 # %%
