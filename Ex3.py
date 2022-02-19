@@ -319,3 +319,53 @@ print(autovalores_C)
 print("Autovalores calculados C: ")
 print(autoval_C)
 
+
+# matriz exercicio 1.a
+    # n = 10
+    # matriz_B = np.random.rand(n, n)
+    # vetor_x0 = np.random.rand(n, 1)
+    # matriz_A = np.matmul(matriz_B, matriz_B.T)
+
+# matriz exercicio 1.b.i
+    # n = 7
+    # matriz_B = np.random.rand(n, n)
+
+    # # λ1 = 95 e λ2 = 92
+    # matriz_D = np.array(
+    #     [[2, 0, 0, 0, 0, 0, 0],
+    #     [0, 13, 0, 0, 0, 0, 0],
+    #     [0, 0, 92, 0, 0, 0, 0],
+    #     [0, 0, 0, 32, 0, 0, 0],
+    #     [0, 0, 0, 0, 76, 0, 0],
+    #     [0, 0, 0, 0, 0, 95, 0],
+    #     [0, 0, 0, 0, 0, 0, 22]]
+    # )
+    
+    # vetor_x0 = np.random.rand(n, 1)
+
+    # matriz_interm = np.matmul(matriz_B, matriz_D)
+
+    # inv_matriz_B = np.linalg.inv(matriz_B)
+    # matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+
+# matriz exercicio 1.b.ii
+    # n = 7
+    # matriz_B = np.random.rand(n, n)
+
+    # # λ1 = 92 e λ2 = 13
+    # matriz_D = np.array(
+    #     [[2, 0, 0, 0, 0, 0, 0],
+    #     [0, 13, 0, 0, 0, 0, 0],
+    #     [0, 0, 92, 0, 0, 0, 0],
+    #     [0, 0, 0, 10, 0, 0, 0],
+    #     [0, 0, 0, 0, 1, 0, 0],
+    #     [0, 0, 0, 0, 0, 8, 0],
+    #     [0, 0, 0, 0, 0, 0, 11]]
+    # )
+    
+    # vetor_x0 = np.random.rand(n, 1)
+
+    # matriz_interm = np.matmul(matriz_B, matriz_D)
+
+    # inv_matriz_B = np.linalg.inv(matriz_B)
+    # matriz_A = np.matmul(matriz_interm, inv_matriz_B)
