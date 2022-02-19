@@ -5,7 +5,6 @@
 # * no mesmo diretorio que o arquivo Ex4.py                                 *
 # ***************************************************************************
 # %%
-from tokenize import String
 import numpy as np
 import matplotlib.pyplot as plt
 from Ex1 import metodo_das_potencias
@@ -58,6 +57,8 @@ def plotagemRede1():
     plt.grid(visible=True, axis='both', alpha=0.2)
     plt.figure(figsize=(10, 10))
 
+    plt.savefig("rede1.png")
+
     plt.show()
 
 
@@ -101,6 +102,8 @@ def plotagemRede2():
     plt.title(r"Rede $G_{2}$")
     plt.grid(visible=True, axis='both', alpha=0.2)
     plt.figure(figsize=(10, 10))
+
+    plt.savefig("rede2.png")
 
     plt.show()
 
@@ -269,6 +272,6 @@ def menu():
         print("Modo de operacao invalido")
 
 # Descomentar para testagem do algoritmo
-#menu()
+menu()
 
 # %%

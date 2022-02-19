@@ -175,6 +175,9 @@ def plotagem_grafico_erros(matriz_A):
     plt.ylabel("Erro L2")
     plt.legend(loc="lower left")
 
+    # para salvar a figura no diretorio atual
+    # plt.savefig("grafico.png")
+
     plt.show()
 
 # ===========================================================================
