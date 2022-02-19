@@ -221,7 +221,7 @@ def plotagem_grafico_erros(matriz_A):
 
 #Função main
 epsilon = 10**(-15)
-n = 3
+n = 7
 k = 0
 n_iteracoes = 0
 B = np.random.rand(n, n)
