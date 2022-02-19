@@ -107,6 +107,7 @@ def calcula_autovaloresQR(matriz_A, n, autovalores, epsilon):
     i = 0
     j = 0
     k = 0
+    global num_iteracoes
     R = np.zeros((n,n))
     Q = np.zeros((n, n))
     diag = np.zeros((n,1))
@@ -122,16 +123,29 @@ def calcula_autovaloresQR(matriz_A, n, autovalores, epsilon):
         while i < n-1:
             R = calcula_R(R, n, i)
             Q = calcula_Q(matriz_A, R)
+            vetor_Q.append(Q)
+            num_iteracoes = num_iteracoes + 1
             i = i + 1
+        #print("Matriz q: ")
+        #print(Q)
         matriz_A = np.dot(R, Q)
         diag = diagonal(matriz_A, n)
         if parada(diag, n, autovalores, epsilon):
             break
-        elif k > 50:
+        elif k > 70:
             break
         i = 0
         k = k + 1
     return diag
+
+#Calcula a matriz V_K
+def calcula_Vk(vetor_Q, n, num_int):
+    i = 1
+    matriz_V = vetor_Q[0]
+    while i < num_int :
+        matriz_V = np.dot(matriz_V, vetor_Q[i])
+        i = i + 1
+    return matriz_V
 
 #Devolve um vetor com os elementos da diagonal da matriz
 def diagonal(matriz_A, n):
@@ -166,20 +180,142 @@ def prod_escalar(A, B, n):
         i = i + 1
     return prod
 
-#Normaliza os autovetores
+#Eliminação Gaussiana
+def eli_Gauss(matriz_A, n):
+    matriz_Gauss = np.zeros((n,n))
+    i = 0
+    j = 0
+    k = 0
+    while i < n:
+        while j < n:
+            matriz_Gauss[i][j] = matriz_A[i][j]
+            j = j + 1
+        i = i + 1
+        j = 0
+    i = 0
+    j = 0
+    while i < n:
+        k = i + 1
+        while k < n:
+            fator = matriz_Gauss[k][i]/matriz_Gauss[i][i]
+            while j < n:
+                matriz_Gauss[k][j] = matriz_Gauss[k][j] - fator * matriz_Gauss[i][j]
+                j = j + 1
+            j = 0
+            k = k + 1
+        i = i + 1
+    return matriz_Gauss
 
+#Calcula um autovetor
+def calcula_autovetor(matriz_A, n, autovalor):
+    autovet = np.zeros((n,1))
+    matriz_G = eli_Gauss(matriz_A, n)
+    i = 0
+    while i < n:
+        matriz_G[i][i] = matriz_G[i][i] - autovalor
+        i = i + 1
+    if matriz_G[2][2] == 0 and matriz_G[1][1] != 0 and matriz_G[0][0] != 0:
+        autovet[2] = 0
+        autovet[1] = 1 / ((matriz_G[0][1]/matriz_G[0][0])**2 + 1)
+        autovet[0] = -1 * (matriz_G[0][1]/matriz_G[0][0]) * autovet[1]
+    elif matriz_G[2][2] == 0 and matriz_G[1][1] == 0 and matriz_G[0][0] != 0:
+        autovet[2] = 0
+        autovet[1] = 0
+        autovet[0] = 1 / (matriz_G[0][0]**2)
+    elif matriz_G[2][2] == 0 and matriz_G[1][1] != 0 and matriz_G[0][0] == 0:
+        autovet[2] = 0
+        autovet[1] = 1 / (matriz_G[1][1]**2)
+        autovet[0] = 0
+    elif matriz_G[2][2] != 0 and matriz_G[1][1] != 0 and matriz_G[0][0] != 0:
+        autovet[2] = 1 / np.sqrt((((matriz_G[0][1] * matriz_G[1][2]) ** 2 / matriz_G[0][0] ** 2) + (matriz_G[1][2] / matriz_G[1][1]) ** 2 + 1))
+        autovet[1] = -1 * (matriz_G[1][2] / matriz_G[1][1]) * autovet[2]
+        autovet[0] = (((matriz_G[0][1] * matriz_G[1][2]) / matriz_G[1][1] - matriz_G[0][2]) / matriz_G[0][0]) * autovet[2]
+    elif matriz_G[2][2] != 0 and matriz_G[1][1] == 0 and matriz_G[0][0] != 0:
+        autovet[1] = 0
+        autovet[2] = 1 / ((matriz_G[0][2]/matriz_G[0][0])**2 + 1)
+        autovet[0] = -1 * (matriz_G[0][2]/matriz_G[0][0]) * autovet[1]
+    elif matriz_G[2][2] != 0 and matriz_G[1][1] == 0 and matriz_G[0][0] == 0:
+        autovet[2] =  1 / (matriz_G[2][2] ** 2)
+        autovet[1] = 0
+        autovet[0] = 0
+    elif matriz_G[2][2] != 0 and matriz_G[1][1] != 0 and matriz_G[0][0] == 0:
+        autovet[0] = 0
+        autovet[2] = 1 / ((matriz_G[1][2] / matriz_G[1][1]) ** 2 + 1)
+        autovet[1] = -1 * (matriz_G[1][2] / matriz_G[1][1]) * autovet[1]
+    else:
+        autovet[2] = 0
+        autovet[1] = 0
+        autovet[0] = 0
+
+    return autovet
+
+#Calcula os autovetores
+def autovetores_sistema(matriz_A, n, autovalores):
+    matriz_vet = np.zeros((n,n))
+    vetor_aut = np.zeros((n,1))
+    i = 0
+    while i < n:
+        vetor_aut = calcula_autovetor(matriz_A, n, autovalores[i])
+        j = 0
+        while j < n:
+            matriz_vet[j][i] = vetor_aut[j]
+            j = j + 1
+        i = i + 1
+    return matriz_vet
+
+#Normaliza os autovetores
+def normaliza(matriz_autovetores, n):
+    autovet_normalizado = np.zeros((n,n))
+    vetor_coluna = np.zeros((n,1))
+    i = 0
+    j = 0
+    while i < n:
+        vetor_coluna = coluna(matriz_autovetores, i, n)
+        while j < n:
+            autovet_normalizado[i][j] = matriz_autovetores[i][j]/np.linalg.norm(vetor_coluna)
+            j = j + 1
+        j = 0
+        i = i + 1
+    return autovet_normalizado
 
 #Main
 matriz_A = np.array([[6, -2, -1],[-2, 6, -1], [-1, -1, 5]])
 #matriz_A = np.array([[5, -2], [-2, 8]])
 n = 3
 autovalores, autovetores = np.linalg.eig(matriz_A)
-autovetor_normalizado = np.zeros((3,3))
-print(autovetores)
 #Exercicio 1
-epsilon = 0.000000001
+epsilon = 0.00000000001
+vetor_Q = []
+num_iteracoes = 0
 avalores_calculado = calcula_autovaloresQR(matriz_A, n, autovalores, epsilon)
 print("Autovalores: ")
 print(autovalores)
 print("Autovalores calculados: ")
 print(avalores_calculado)
+#Calculando autovetores
+#matriz_V = autovetores_sistema(matriz_A, n, autovalores)
+matriz_V = calcula_Vk(vetor_Q, n, num_iteracoes)
+#matriz_V = normaliza(matriz_V, n)
+print(autovetores)
+print(matriz_V)
+
+#Ex 2
+matriz_B = np.array([[1, 1], [-3, 1]])
+autovalores_B, autovetores_B = np.linalg.eig(matriz_B)
+n = 2
+autoval_B = calcula_autovaloresQR(matriz_B, n, autovalores_B, epsilon)
+print("Autovalores B: ")
+print(autovalores_B)
+print("Autovalores calculados B: ")
+print(autoval_B)
+
+#Ex 3
+matriz_C = np.array([[3, -3], [0.333333, 5]])
+autovalores_C, autovetores_C = np.linalg.eig(matriz_C)
+n = 2
+autoval_C = calcula_autovaloresQR(matriz_C, n, autovalores_B, epsilon)
+print("Autovalores C: ")
+print(autovalores_C)
+print("Autovalores calculados C: ")
+print(autoval_C)
+
