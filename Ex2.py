@@ -1,17 +1,5 @@
 # Arquivo referente ao Exercicio 2
 
-# Comandos uteis
-# .ndim : dimensao do array/matriz
-# .shape : indica o formato da matriz n x m
-# .[r, c] : saida é o elemento contido no posicao (r, c) *conta a partir de zero
-# .[:, c] : todos os elementos da coluna c, possivel de atribuir um valor a coluna c
-# .[r, a:b:c] : acessa elementos da coluna r, indo do elemento a até o b, pulando de c em c
-# np.zeros((n,m)) : inicializa uma matriz de zeros de dimensao n x m
-# np.ones((n, m)) : inicializa uma matriz de uns de dimensao n x m
-# np.full((n, m), a): inicializa uma matriz de dimensao n x m de valor a
-# np.full_like (A, b): inicializa uma matriz de mesmo tamanho de A com todos os valores b
-# np.random.randint()
-# np.norm: retorna norma/modulo do vetor
 #%%
 import numpy as np
 import matplotlib.pyplot as plt
@@ -63,8 +51,6 @@ def calcula_SOR(matriz_A, n, epsilon, num_interacoes):
     erro_vetor = 0
     autovalor_dominante = calcula_autovalor_dominante(np.linalg.inv(matriz_A))
     autovetor_dominante = calcula_autovetor_dominante(np.linalg.inv(matriz_A))
-    print("Dominante: ")
-    print(autovetor_dominante)
     i = 0
     global k
     #A iteração abaixo deve ser realizada num número limitado em num_interações vezes
@@ -87,12 +73,8 @@ def calcula_SOR(matriz_A, n, epsilon, num_interacoes):
         erro_vetor = erro_autovetor((vetor_x / np.linalg.norm(vetor_x)), autovetor_dominante)
         erros_autovetor.append(erro_vetor)
         if calcula_parada(vetor_x, vetor_b, epsilon):
-            print("Calculado: ")
-            print(vetor_x / np.linalg.norm(vetor_x))
             break
         if k > num_interacoes:
-            print("Calculado: ")
-            print(vetor_x/np.linalg.norm(vetor_x))
             break
         for l in range(vetor_x.size):
             vetor_b[l] = vetor_x[l] / np.linalg.norm(vetor_x)
@@ -155,12 +137,6 @@ def erro_autovetor(vetor_xk, autovetor_dominante):
     for i in range(0, n):
         modulo_autovetor_dominante[i][0] = np.abs(autovetor_dominante[i][0])
         modulo_xk[i][0] = np.abs(vetor_xk[i][0])
-    print("Valor dominante: ")
-    print(modulo_autovetor_dominante)
-    print("Valor comparado sem modulo: ")
-    print(vetor_xk)
-    print("Valor comparado com modulo: ")
-    print(modulo_xk)
     sub = modulo_xk - modulo_autovetor_dominante
 
     erro_autovetor = np.linalg.norm(sub)
@@ -214,7 +190,7 @@ def plotagem_grafico_erros(matriz_A):
     plt.ylabel("Erro L2")
     plt.legend(loc="lower left")
 
-    # print(y_erro_autovalor)
+    print(erros_autovalor)
 
     plt.show()
 
@@ -243,55 +219,81 @@ print("\nautovalor dominante: ")
 print(mu)
 plotagem_grafico_erros(np.linalg.inv(matriz_A))
 
+#matriz exercicio 1.b.i
+n = 7
+k = 0
+matriz_B = np.random.rand(n, n)
 
-# matriz exercicio 1.a
-    # n = 10
-    # matriz_B = np.random.rand(n, n)
-    # vetor_x0 = np.random.rand(n, 1)
-    # matriz_A = np.matmul(matriz_B, matriz_B.T)
+#λ1 = 95 e λ2 = 92
+matriz_D = np.array(
+ [[2, 0, 0, 0, 0, 0, 0],
+ [0, 13, 0, 0, 0, 0, 0],
+ [0, 0, 92, 0, 0, 0, 0],
+ [0, 0, 0, 32, 0, 0, 0],
+ [0, 0, 0, 0, 76, 0, 0],
+ [0, 0, 0, 0, 0, 95, 0],
+ [0, 0, 0, 0, 0, 0, 22]]
+)
 
-# matriz exercicio 1.b.i
-    # n = 7
-    # matriz_B = np.random.rand(n, n)
+vetor_x0 = np.random.rand(n, 1)
 
-    # # λ1 = 95 e λ2 = 92
-    # matriz_D = np.array(
-    #     [[2, 0, 0, 0, 0, 0, 0],
-    #     [0, 13, 0, 0, 0, 0, 0],
-    #     [0, 0, 92, 0, 0, 0, 0],
-    #     [0, 0, 0, 32, 0, 0, 0],
-    #     [0, 0, 0, 0, 76, 0, 0],
-    #     [0, 0, 0, 0, 0, 95, 0],
-    #     [0, 0, 0, 0, 0, 0, 22]]
-    # )
-    
-    # vetor_x0 = np.random.rand(n, 1)
+matriz_interm = np.matmul(matriz_B, matriz_D)
 
-    # matriz_interm = np.matmul(matriz_B, matriz_D)
+inv_matriz_B = np.linalg.inv(matriz_B)
+matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+erros_autovalor = []
+erros_autovetor = []
+print(matriz_A)
+print("Autovalores e autovetores: ")
+print(np.linalg.eig(np.linalg.inv(matriz_A)))
+print("\n Calculado: \n")
+if criteiro_de_Sassenfeld(matriz_A, n):
+    n_iteracoes = 50
+    mu = calcula_SOR(matriz_A, n, epsilon, n_iteracoes)
+else:
+    n_iteracoes = 70
+    mu = calcula_SOR(matriz_A, n, epsilon, n_iteracoes)
+print("\nautovalor dominante: ")
+print(mu)
+plotagem_grafico_erros(np.linalg.inv(matriz_A))
 
-    # inv_matriz_B = np.linalg.inv(matriz_B)
-    # matriz_A = np.matmul(matriz_interm, inv_matriz_B)
 
-# matriz exercicio 1.b.ii
-    # n = 7
-    # matriz_B = np.random.rand(n, n)
+#atriz exercicio 1.b.ii
+n = 7
+k = 0
+matriz_B = np.random.rand(n, n)
 
-    # # λ1 = 92 e λ2 = 13
-    # matriz_D = np.array(
-    #     [[2, 0, 0, 0, 0, 0, 0],
-    #     [0, 13, 0, 0, 0, 0, 0],
-    #     [0, 0, 92, 0, 0, 0, 0],
-    #     [0, 0, 0, 10, 0, 0, 0],
-    #     [0, 0, 0, 0, 1, 0, 0],
-    #     [0, 0, 0, 0, 0, 8, 0],
-    #     [0, 0, 0, 0, 0, 0, 11]]
-    # )
-    
-    # vetor_x0 = np.random.rand(n, 1)
+# λ1 = 92 e λ2 = 13
+matriz_D = np.array(
+ [[2, 0, 0, 0, 0, 0, 0],
+ [0, 13, 0, 0, 0, 0, 0],
+ [0, 0, 92, 0, 0, 0, 0],
+ [0, 0, 0, 10, 0, 0, 0],
+ [0, 0, 0, 0, 1, 0, 0],
+ [0, 0, 0, 0, 0, 8, 0],
+ [0, 0, 0, 0, 0, 0, 11]]
+)
 
-    # matriz_interm = np.matmul(matriz_B, matriz_D)
+vetor_x0 = np.random.rand(n, 1)
 
-    # inv_matriz_B = np.linalg.inv(matriz_B)
-    # matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+matriz_interm = np.matmul(matriz_B, matriz_D)
+
+inv_matriz_B = np.linalg.inv(matriz_B)
+matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+erros_autovalor = []
+erros_autovetor = []
+print(matriz_A)
+print("Autovalores e autovetores: ")
+print(np.linalg.eig(np.linalg.inv(matriz_A)))
+print("\n Calculado: \n")
+if criteiro_de_Sassenfeld(matriz_A, n):
+    n_iteracoes = 50
+    mu = calcula_SOR(matriz_A, n, epsilon, n_iteracoes)
+else:
+    n_iteracoes = 70
+    mu = calcula_SOR(matriz_A, n, epsilon, n_iteracoes)
+print("\nautovalor dominante: ")
+print(mu)
+plotagem_grafico_erros(np.linalg.inv(matriz_A))
 
 #%%

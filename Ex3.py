@@ -204,16 +204,10 @@ epsilon = 0.00000000001
 vetor_Q = []
 num_iteracoes = 0
 avalores_calculado = calcula_autovaloresQR(matriz_A, n, autovalores, epsilon)
-print("Autovalores: ")
-print(autovalores)
-print("Autovalores calculados: ")
-print(avalores_calculado)
 #Calculando autovetores
 #matriz_V = autovetores_sistema(matriz_A, n, autovalores)
 matriz_V = calcula_Vk(vetor_Q, n, num_iteracoes)
 #matriz_V = normaliza(matriz_V, n)
-print(autovetores)
-print(matriz_V)
 
 #Main
 matriz_A = np.array([[6, -2, -1],[-2, 6, -1], [-1, -1, 5]])
@@ -255,59 +249,85 @@ print("Matriz C: ")
 print(matriz_C)
 autovalores_C, autovetores_C = np.linalg.eig(matriz_C)
 n = 2
-autoval_C = calcula_autovaloresQR(matriz_C, n, autovalores_B, epsilon)
+autoval_C = calcula_autovaloresQR(matriz_C, n, autovalores_C, epsilon)
 print("Autovalores da matriz C: ")
 print(autovalores_C)
 print("Autovalores calculados de C pelo método QR: ")
 print(autoval_C)
 
+#Ex 4
+#matriz exercicio 1.a
+n = 10
+matriz_B = np.random.rand(n, n)
+vetor_x0 = np.random.rand(n, 1)
+matriz_A = np.matmul(matriz_B, matriz_B.T)
+print("Iniciando o exercício 3.4: ")
+print("O exercicio 3.4 compara o cálculo dos autovalores de uma matriz C a partir do polinômio característico e do método QR: ")
+print("Matriz A: ")
+print(matriz_A)
+autovalores_A, autovetores_A = np.linalg.eig(matriz_A)
+autoval_A = calcula_autovaloresQR(matriz_A, n, autovalores_A, epsilon)
+print("Autovalores da matriz A: ")
+print(autovalores_A)
+print("Autovalores calculados de A pelo método QR: ")
+print(autoval_A)
 
-# matriz exercicio 1.a
-    # n = 10
-    # matriz_B = np.random.rand(n, n)
-    # vetor_x0 = np.random.rand(n, 1)
-    # matriz_A = np.matmul(matriz_B, matriz_B.T)
+#matriz exercicio 1.b.i
+n = 7
+matriz_B = np.random.rand(n, n)
 
-# matriz exercicio 1.b.i
-    # n = 7
-    # matriz_B = np.random.rand(n, n)
+# # λ1 = 95 e λ2 = 92
+matriz_D = np.array(
+[[2, 0, 0, 0, 0, 0, 0],
+[0, 13, 0, 0, 0, 0, 0],
+[0, 0, 92, 0, 0, 0, 0],
+[0, 0, 0, 32, 0, 0, 0],
+[0, 0, 0, 0, 76, 0, 0],
+[0, 0, 0, 0, 0, 95, 0],
+[0, 0, 0, 0, 0, 0, 22]]
+)
 
-    # # λ1 = 95 e λ2 = 92
-    # matriz_D = np.array(
-    #     [[2, 0, 0, 0, 0, 0, 0],
-    #     [0, 13, 0, 0, 0, 0, 0],
-    #     [0, 0, 92, 0, 0, 0, 0],
-    #     [0, 0, 0, 32, 0, 0, 0],
-    #     [0, 0, 0, 0, 76, 0, 0],
-    #     [0, 0, 0, 0, 0, 95, 0],
-    #     [0, 0, 0, 0, 0, 0, 22]]
-    # )
-    
-    # vetor_x0 = np.random.rand(n, 1)
+vetor_x0 = np.random.rand(n, 1)
 
-    # matriz_interm = np.matmul(matriz_B, matriz_D)
+matriz_interm = np.matmul(matriz_B, matriz_D)
 
-    # inv_matriz_B = np.linalg.inv(matriz_B)
-    # matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+inv_matriz_B = np.linalg.inv(matriz_B)
+matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+print("Matriz A: ")
+print(matriz_A)
+autovalores_A, autovetores_A = np.linalg.eig(matriz_A)
+autoval_A = calcula_autovaloresQR(matriz_A, n, autovalores_A, epsilon)
+print("Autovalores da matriz A: ")
+print(autovalores_A)
+print("Autovalores calculados de A pelo método QR: ")
+print(autoval_A)
 
 # matriz exercicio 1.b.ii
-    # n = 7
-    # matriz_B = np.random.rand(n, n)
+n = 7
+matriz_B = np.random.rand(n, n)
 
-    # # λ1 = 92 e λ2 = 13
-    # matriz_D = np.array(
-    #     [[2, 0, 0, 0, 0, 0, 0],
-    #     [0, 13, 0, 0, 0, 0, 0],
-    #     [0, 0, 92, 0, 0, 0, 0],
-    #     [0, 0, 0, 10, 0, 0, 0],
-    #     [0, 0, 0, 0, 1, 0, 0],
-    #     [0, 0, 0, 0, 0, 8, 0],
-    #     [0, 0, 0, 0, 0, 0, 11]]
-    # )
-    
-    # vetor_x0 = np.random.rand(n, 1)
+# # λ1 = 92 e λ2 = 13
+matriz_D = np.array(
+[[2, 0, 0, 0, 0, 0, 0],
+[0, 13, 0, 0, 0, 0, 0],
+[0, 0, 92, 0, 0, 0, 0],
+[0, 0, 0, 10, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 0],
+[0, 0, 0, 0, 0, 8, 0],
+[0, 0, 0, 0, 0, 0, 11]]
+)
 
-    # matriz_interm = np.matmul(matriz_B, matriz_D)
+vetor_x0 = np.random.rand(n, 1)
 
-    # inv_matriz_B = np.linalg.inv(matriz_B)
-    # matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+matriz_interm = np.matmul(matriz_B, matriz_D)
+
+inv_matriz_B = np.linalg.inv(matriz_B)
+matriz_A = np.matmul(matriz_interm, inv_matriz_B)
+print("Matriz A: ")
+print(matriz_A)
+autovalores_A, autovetores_A = np.linalg.eig(matriz_A)
+autoval_A = calcula_autovaloresQR(matriz_A, n, autovalores_A, epsilon)
+print("Autovalores da matriz A: ")
+print(autovalores_A)
+print("Autovalores calculados de A pelo método QR: ")
+print(autoval_A)
