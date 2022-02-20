@@ -120,13 +120,8 @@ def calcula_Uk(Xk, matrizA):
 # calculo de erro do autovetor calculado em relacao ao teorico
 # obtido pela funcao numpy.linalg.eig
 def calcula_erro_autovetor(vetor_xk, autovetor_dominante):
-    n = vetor_xk.shape[0]
-    modulo_autovetor_dominante = np.zeros(shape=(n, 1))
 
-    for i in range(0, n):
-        modulo_autovetor_dominante[i][0] = np.abs(autovetor_dominante[i][0])
-
-    sub = vetor_xk - modulo_autovetor_dominante
+    sub = vetor_xk - autovetor_dominante
 
     erro_autovetor = np.linalg.norm(sub)
 
@@ -176,7 +171,7 @@ def plotagem_grafico_erros(matriz_A):
     plt.legend(loc="lower left")
 
     # para salvar a figura no diretorio atual
-    # plt.savefig("grafico.png")
+    #plt.savefig("grafico.png")
 
     plt.show()
 
