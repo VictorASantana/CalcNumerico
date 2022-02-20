@@ -171,7 +171,7 @@ def plotagem_grafico_erros(matriz_A):
     plt.legend(loc="lower left")
 
     # para salvar a figura no diretorio atual
-    #plt.savefig("grafico.png")
+    plt.savefig("grafico.png")
 
     plt.show()
 
@@ -213,7 +213,7 @@ def resultado_item_1():
     n = 10
     matriz_B = np.random.rand(n, n)
     vetor_x0 = np.random.rand(n, 1)
-    matriz_A = np.matmul(matriz_B, matriz_B.T)
+    matriz_A = matriz_B + matriz_B.T
 
     Uk_final = metodo_das_potencias(matriz_A, vetor_x0)[0]
     plotagem_grafico_erros(matriz_A)
@@ -279,7 +279,7 @@ def menu():
     operacao = 1
 
     print("Escolha o modo de operacao do algoritmo")
-    print("1) A = B * Bt")
+    print("1) A = B + Bt")
     print("""    --> Matriz B de formato 10x10
     --> Matriz B composta de coeficientes aleatorioes entre 0 e 1
     --> Bt representa a transposta de B\n""")
