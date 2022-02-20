@@ -55,7 +55,6 @@ def plotagemRede1():
     # especificacoes do grafico
     plt.title(r"Rede $G_{1}$")
     plt.grid(visible=True, axis='both', alpha=0.2)
-    plt.figure(figsize=(10, 10))
 
     plt.savefig("rede1.png")
 
@@ -101,7 +100,6 @@ def plotagemRede2():
     # especificacoes do grafico
     plt.title(r"Rede $G_{2}$")
     plt.grid(visible=True, axis='both', alpha=0.2)
-    plt.figure(figsize=(10, 10))
 
     plt.savefig("rede2.png")
 
