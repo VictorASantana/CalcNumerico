@@ -1,3 +1,15 @@
+# =-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-=
+# Exercício Computacional desenvolvido por:                                 =
+#                                                                           =
+# Nome: Pedro Henrique Rodrigues de Viveiros                                =
+# NUSP: 11804035                                                            =
+#                                                                           =
+# Nome: Victor de Almeida Santana                                           =
+# NUSP: 11806718                                                            =
+#                                                                           =
+# Entrega em 20/02/2022                                                     =
+# =-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-=
+
 # Arquivo referente ao Exercicio 1
 # %%
 import matplotlib.pyplot as plt
