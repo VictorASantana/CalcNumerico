@@ -322,6 +322,7 @@ def menu():
         print("Modo de operacao escolhido invalido.")
 
 # Descomentar somente para testagem do exercicio 1
-#menu()
+if __name__ == '__main__':
+    menu()
 
 # %%
