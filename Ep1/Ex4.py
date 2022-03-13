@@ -7,7 +7,7 @@
 # %%
 import numpy as np
 import matplotlib.pyplot as plt
-from Ex1 import metodo_das_potencias
+from Ep1.Ex1 import metodo_das_potencias
 
 # ===========================================================================
 # Exercicio 4.1
