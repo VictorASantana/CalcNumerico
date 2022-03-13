@@ -1,3 +1,15 @@
+# =-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-=
+# Exercício Computacional desenvolvido por:                                 =
+#                                                                           =
+# Nome: Pedro Henrique Rodrigues de Viveiros                                =
+# NUSP: 11804035                                                            =
+#                                                                           =
+# Nome: Victor de Almeida Santana                                           =
+# NUSP: 11806718                                                            =
+#                                                                           =
+# Entrega em 20/02/2022                                                     =
+# =-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-=
+
 # Arquivo referente ao exercicio 4
 # ***************************************************************************
 # * IMPORTANTE: para funcionamento, o arquivo utiliza a funcao              *
@@ -18,7 +30,7 @@ from Ep1.Ex1 import metodo_das_potencias
 #
 #   0  1   2   3  4   5
 # 5 a
-# 4    a   b   c
+# 4    a   b   c   
 # 3       abc     d
 # 2    c   b   a  d
 # 1 c      b      ad
@@ -55,7 +67,6 @@ def plotagemRede1():
     # especificacoes do grafico
     plt.title(r"Rede $G_{1}$")
     plt.grid(visible=True, axis='both', alpha=0.2)
-    plt.figure(figsize=(10, 10))
 
     plt.savefig("rede1.png")
 
@@ -101,7 +112,6 @@ def plotagemRede2():
     # especificacoes do grafico
     plt.title(r"Rede $G_{2}$")
     plt.grid(visible=True, axis='both', alpha=0.2)
-    plt.figure(figsize=(10, 10))
 
     plt.savefig("rede2.png")
 
@@ -229,7 +239,7 @@ def calculaVerticeMaiorCentralidade(matrizArestas):
         centralidadeAtual = vetorCentralidades[i][0]
         if(centralidadeAtual > maiorCentralidade):
             maiorCentralidade = centralidadeAtual
-            verticeMaiorCentralidade = i+1
+            verticeMaiorCentralidade = i
 
     return verticeMaiorCentralidade
 
@@ -246,9 +256,10 @@ def menu():
     print("2) Plotagem da Rede 2")
     print("3) Imprime matriz de arestas da Rede 1")
     print("4) Imprime matriz de arestas da Rede 2")
-    print("5) Comparacao de autovalores dominantes em cada rede")
-    print("6) Determina vertice de maior centralidade da Rede 1")
-    print("7) Determina vertice de maior centralidade da Rede 2")
+    print("5) Imprime matriz de adjacencia da Rede 1")
+    print("6) Imprime matriz de adjacencia da Rede 2")
+    print("7) Comparacao de autovalores dominantes em cada rede")
+    print("8) Determina vertice de maior centralidade da Rede 1 e da Rede 2")
 
     operacao = int(input("Modo de operacao: "))
 
@@ -261,13 +272,16 @@ def menu():
     elif operacao == 4:
         print(eps2)
     elif operacao == 5:
-        comparaAutovaloresDominantesRedes(eps1, eps2)
+        print(calculaMatrizAdjacencia(eps1))
     elif operacao == 6:
-        vertice = calculaVerticeMaiorCentralidade(eps1)
-        print("Vertice de maior centralidade de G1: " + str(vertice))
+        print(calculaMatrizAdjacencia(eps2))
     elif operacao == 7:
-        vertice = calculaVerticeMaiorCentralidade(eps2)
-        print("Vertice de maior centralidade de G1: " + str(vertice))
+        comparaAutovaloresDominantesRedes(eps1, eps2)
+    elif operacao == 8:
+        vertice1 = calculaVerticeMaiorCentralidade(eps1)
+        print("Vertice de maior centralidade de G1: " + str(vertice1))
+        vertice2 = calculaVerticeMaiorCentralidade(eps2)
+        print("Vertice de maior centralidade de G2: " + str(vertice2))
     else:
         print("Modo de operacao invalido")
 

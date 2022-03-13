@@ -1,3 +1,15 @@
+# =-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-=
+# Exercício Computacional desenvolvido por:                                 =
+#                                                                           =
+# Nome: Pedro Henrique Rodrigues de Viveiros                                =
+# NUSP: 11804035                                                            =
+#                                                                           =
+# Nome: Victor de Almeida Santana                                           =
+# NUSP: 11806718                                                            =
+#                                                                           =
+# Entrega em 20/02/2022                                                     =
+# =-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-==-=-=-=-=-=-=-=
+
 # Arquivo referente ao Exercicio 1
 # %%
 import matplotlib.pyplot as plt
@@ -120,13 +132,8 @@ def calcula_Uk(Xk, matrizA):
 # calculo de erro do autovetor calculado em relacao ao teorico
 # obtido pela funcao numpy.linalg.eig
 def calcula_erro_autovetor(vetor_xk, autovetor_dominante):
-    n = vetor_xk.shape[0]
-    modulo_autovetor_dominante = np.zeros(shape=(n, 1))
 
-    for i in range(0, n):
-        modulo_autovetor_dominante[i][0] = np.abs(autovetor_dominante[i][0])
-
-    sub = vetor_xk - modulo_autovetor_dominante
+    sub = vetor_xk - autovetor_dominante
 
     erro_autovetor = np.linalg.norm(sub)
 
@@ -176,7 +183,7 @@ def plotagem_grafico_erros(matriz_A):
     plt.legend(loc="lower left")
 
     # para salvar a figura no diretorio atual
-    # plt.savefig("grafico.png")
+    plt.savefig("grafico.png")
 
     plt.show()
 
@@ -218,7 +225,7 @@ def resultado_item_1():
     n = 10
     matriz_B = np.random.rand(n, n)
     vetor_x0 = np.random.rand(n, 1)
-    matriz_A = np.matmul(matriz_B, matriz_B.T)
+    matriz_A = matriz_B + matriz_B.T
 
     Uk_final = metodo_das_potencias(matriz_A, vetor_x0)[0]
     plotagem_grafico_erros(matriz_A)
@@ -284,7 +291,7 @@ def menu():
     operacao = 1
 
     print("Escolha o modo de operacao do algoritmo")
-    print("1) A = B * Bt")
+    print("1) A = B + Bt")
     print("""    --> Matriz B de formato 10x10
     --> Matriz B composta de coeficientes aleatorioes entre 0 e 1
     --> Bt representa a transposta de B\n""")
@@ -315,6 +322,7 @@ def menu():
         print("Modo de operacao escolhido invalido.")
 
 # Descomentar somente para testagem do exercicio 1
-#menu()
+if __name__ == '__main__':
+    menu()
 
 # %%
