@@ -4,17 +4,19 @@
 #u_{N}^{j} = Ke^{L + \sigma^2\Tau_j/2}
 import numpy as np
 
-def itera(n, K, x, sigma, DeltaT, DeltaX):
+def itera(n, K, x, sigma, DeltaT, DeltaX, L):
     matriz_J = np.zero(shape=(2, n))
-    #inicialização:
-    i = 0
+    # para i = 0, u = 0
     matriz_J[0][0] = 0
     matriz_J[1][0] = 0
-    maximo = maxi(x)
-    while(i < n):
-        matriz_J[0][i] = K * maximo
-        i = i + 1
-    i = 0
+
+    max = maximo(np.exp(x) - 1, 0)
+
+    # para j = 0, u = K*max(e^{x_i} - 1,0)
+    for i in range(0, n): matriz_J[0][i] = K * max
+
+    # para i = n, u = Ke^{L + \sigma^2\Tau_j/2}
+    matriz_J[1][n] = K * np.exp(L + sigma**2 * DeltaT)
 
     return matriz_J
 
@@ -40,9 +42,8 @@ def calcula_DeltaX(L, N):
 def calcula_DeltaTau(T, M):
     return T/M
 
-def maxi(x):
-    expressao = np.exp(x) - 1
-    if(expressao >= 0):
-        return expressao
+def maximo(x, y):
+    if(x >= y):
+        return x
     else:
-        return 0
+        return y
