@@ -24,14 +24,17 @@ def itera(n, K, x, sigma, DeltaT, DeltaX, L):
 def calcula_x(DeltaX, i, L):
     return i * DeltaX - L
 
+#Calculo de \tau(j)
 def calcula_tau(DeltaTau, j):
     return DeltaTau * j
 
+#Calculo iterativo de S
 def calcula_S(K, x_i, r, sigma, tau_j):
     exponencial = np.exp(x_i - (r - sigma**2/2)*tau_j)
     S = K * exponencial
     return S
 
+#Calculo iterativo de V
 def calcula_V_i_j(u_i_j, r, tau_j):
     return u_i_j * np.exp(- 1 * (r * tau_j))
 
@@ -47,3 +50,15 @@ def maximo(x, y):
         return x
     else:
         return y
+
+#Calculo de \tau(t)
+def tau_t(T, t):
+    return T - t
+
+#Calculo de x(S,t)
+def x_ideal(S, K, r, sigma, tau_t):
+    return np.log(S/K) + (r - sigma**2/2)*tau_t
+
+#Calculo de V(S,t)
+def V_S_t(x_i, x_proximo, V_i_j, x_ideal, V_proximo_j):
+    return ((x_proximo - x_ideal)*V_i_j - (x_i - x_ideal)*V_proximo_j)/(x_proximo - x_i)
