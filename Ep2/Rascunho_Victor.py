@@ -4,7 +4,7 @@
 #u_{N}^{j} = Ke^{L + \sigma^2\Tau_j/2}
 import numpy as np
 
-def itera(n, K, x, sigma, DeltaT, DeltaX, L):
+def itera(n, m, K, x, sigma, DeltaT, DeltaX, L):
     matriz_J = np.zero(shape=(2, n))
     # para i = 0, u = 0
     matriz_J[0][0] = 0
@@ -13,10 +13,17 @@ def itera(n, K, x, sigma, DeltaT, DeltaX, L):
     max = maximo(np.exp(x) - 1, 0)
 
     # para j = 0, u = K*max(e^{x_i} - 1,0)
-    for i in range(0, n): matriz_J[0][i] = K * max
+    for i in range(1, n): matriz_J[0][i] = K * max
 
     # para i = n, u = Ke^{L + \sigma^2\Tau_j/2}
-    matriz_J[1][n] = K * np.exp(L + sigma**2 * DeltaT)
+
+
+
+    for j in range(1, m):
+        for i in range(1, n-1):
+            tau_j = calcula_tau(DeltaT, j)
+            matriz_J[j][n] = K * np.exp(L + sigma ** 2 * tau_j/2)
+            matriz_J[j+1][i] = matriz_J[j][i] + (DeltaT/DeltaX**2)*(sigma**2/2)*(matriz_J[j][i-1] - 2*matriz_J[j][i] + matriz_J[j][i+1])
 
     return matriz_J
 
