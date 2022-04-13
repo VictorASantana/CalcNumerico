@@ -4,34 +4,80 @@
 #u_{N}^{j} = Ke^{L + \sigma^2\Tau_j/2}
 import numpy as np
 
-def itera(n, m, K, x, sigma, DeltaT, DeltaX, L, r, tau_j):
-    V_i_j = np.zero(shape=(2, n))
-    V_s_t = np.zero(shape=(2, n))
-    matriz_J = np.zero(shape=(2, n))
+def itera(n, m, K, x, sigma, DeltaT, DeltaX, L, r, S0, T, t, tau_t):
+    V_i_j = np.zeros(shape=(n+1, m+1))
+    S_i_j = np.zeros(shape=(n+1, m+1))
+    x_i = np.zeros(shape=(n+1, 1))
+    intervalo = 0
+    maxvalor = 0
+    minvalor = 0
+    nintervalos = 10
+    matriz_J = np.zeros(shape=(n+1, m+1))
     # para i = 0, u = 0
     matriz_J[0][0] = 0
     matriz_J[1][0] = 0
-
+    tau_j = np.zeros(shape=(m+1, 1))
     max = maximo(np.exp(x) - 1, 0)
+    tau_escolhido = 0
+    x_escolhido = 0
+    diferenca_tau = 0
+    diferenca_x = 0
+    i_escolhido = 0
+    j_escolhido = 0
 
     # para j = 0, u = K*max(e^{x_i} - 1,0)
-    for i in range(1, n): matriz_J[0][i] = K * max
+    for j in range(1, m+1):
+        matriz_J[0][j] = K * max
 
     # para i = n, u = Ke^{L + \sigma^2\Tau_j/2}
 
-    for j in range(1, m):
-        for i in range(1, n-1):
-            tau_j = calcula_tau(DeltaT, j)
-            matriz_J[j][n] = K * np.exp(L + sigma ** 2 * tau_j/2)
-            matriz_J[j+1][i] = matriz_J[j][i] + (DeltaT/DeltaX**2)*(sigma**2/2)*(matriz_J[j][i-1] - 2*matriz_J[j][i] + matriz_J[j][i+1])
+    for i in range(1, n-1):
+        for j in range(1, m):
+            tau_j[j] = calcula_tau(DeltaT, j)
+            matriz_J[n][j] = K * np.exp(L + sigma ** 2 * tau_j[j]/2)
+            matriz_J[i][j+1] = matriz_J[i][j] + (DeltaT/DeltaX**2)*(sigma**2/2)*(matriz_J[i-1][j] - 2*matriz_J[i][j] + matriz_J[i+1][j])
 
-    for i in range(0, m):
-        for j in range(0, n):
-            V_i_j[i][j] = calcula_V_i_j(matriz_J[i][j], r, tau_j)
-            V_s_t[i][j] = V_S_t((calcula_x(DeltaX, i, L)),  calcula_x(DeltaX, i + 1, L), V_i_j[i][j], x, calcula_V_i_j(matriz_J[i+1][j], r, tau_j) )
+    for i in range(0, n+1):
+        x_i[i] = calcula_x(DeltaX, i, L)
+        if x - x_i[i] < diferenca_x:
+            diferenca_x = x - x_i[i]
+            x_escolhido = x_i[i]
+            i_escolhido = i
+        for j in range(0, m+1):
+            tau_j[j] = calcula_tau(DeltaT, j)
+            V_i_j[i][j] = calcula_V_i_j(matriz_J[i][j], r, tau_j[j])
+            print(matriz_J[i][j])
+            S_i_j[i][j] = K + V_i_j[i][j]
+            if tau_t - tau_j[j] < diferenca_tau:
+                diferenca_tau = tau_j[j] - tau_t
+                tau_escolhido = tau_j[j]
+                j_escolhido = j
+            if S_i_j[i][j] > maxvalor:
+                maxvalor = S_i_j[i][j]
+            elif S_i_j[i][j] < minvalor:
+                minvalor = S_i_j[i][j]
+            if i == 0:
+                x_i[j] = calcula_x(DeltaX, L, j)
+
+    #Condicionais do S0:
+    if S0 > maxvalor:
+        maxvalor = S0
+    elif S0 < minvalor:
+        minvalor = S0
+
+    intervalo = (maxvalor - minvalor)/nintervalos
+
+    return V_i_j[i_escolhido][j_escolhido]
 
 
-    return matriz_J
+#Calculo do Prêmio
+def calcula_premio(n, m, S0, sigma):
+    matriz_Premio = np.zero(shape=(n+1, m+1))
+    #Condições de contorno
+    for j in range(0, m+1):
+        matriz_Premio[j][0] = 0
+
+
 
 #Elementos calculados a cada iteração
 def calcula_x(DeltaX, i, L):
@@ -122,8 +168,56 @@ def calcula_u_i_j_vetorizado(tau, x, sigma, N, M, deltaTau, deltaX, K, L, tauJ):
 
     return u
 
+
+
 #Sobre o cálculo de S_t
 #Calcula V_i_j pela equação do calor
 #A iteração X permite obter S_t
 #Constrói-se um intervalo que abarque S_t, tal como S_0, que deve possuir espaçamentos equidistantes
 #A partir dos valores do intervalo de S, calculam-se valores para S_t, de modo que seja possível construir um gráfico que os relacione
+
+#Cálculo do Prêmio (By Pedro Bacic):
+#Calcula-se V(S0, t = 0) e multiplica-se pela Quantidade de Ativos = Prêmio
+
+def calcuV(DeltaT, DeltaX, sigma, tau, S0, K, n, m, L, x_S_t, r):
+    #Declaração de variáveis
+    x_i = np.zeros(shape=(n+1, 1))
+    tau_j = np.zeros(shape=(m+1, 1))
+    u_i_j = np.zeros(shape=(n+1, m+1))
+    V_i_j = np.zeros(shape=(n+1, m+1))
+    distj = 0
+    disti = 0
+    iesc = 0
+    jesc = 0
+
+    for i in range (0, n+1):
+        x_i[i] = calcula_x(DeltaX, i, L)
+        if x_S_t - x_i[i] < disti:
+            disti = x_S_t - x_i[i]
+            iesc = i
+        maxi = maximo(np.exp(x_i[i]) - 1, 0)
+        for j in range(0, m+1):
+            tau_j[j] = calcula_tau(DeltaT, j)
+            if i == 0:
+                u_i_j[i][j] = 0
+            elif i == n:
+                u_i_j[i][j] = K * (np.exp(L + ((sigma**2 * tau_j[j])/2)))
+            elif j == 0:
+                u_i_j[i][j] = K * maxi
+                u_i_j[i][j + 1] = u_i_j[i][j] + ((DeltaT/DeltaX) * (sigma**2/2))*(u_i_j[i-1][j] - 2*u_i_j[i][j] + u_i_j[i+1][j])
+            else:
+                if j + 1 < m:
+                    u_i_j[i][j+1] = u_i_j[i][j] + ((DeltaT/DeltaX) * (sigma**2/2))*(u_i_j[i-1][j] - 2*u_i_j[i][j] + u_i_j[i+1][j])
+            V_i_j[i][j] = calcula_V_i_j(u_i_j[i][j], r, tau_j[j])
+            if tau - tau_j[j] < distj:
+                distj = tau - tau_j[j]
+                jesc = j
+    return V_i_j[iesc][jesc]
+
+
+
+
+
+#Testes:
+V = calcuV(0.04, 0.0002, 0.01, 1, 1, 1, 10000, 25, 10, 0.00995, 0.01)
+print(V)
