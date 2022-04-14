@@ -1,115 +1,48 @@
-# TCC sobre o EP: https://www.ime.usp.br/~map/tcc/2014/Cassiano%20Reinert%20Novais%20dos%20Santos.pdf
-
-#Condições de contorno:
-#u_{i}^{0} = Kmax(e^{x_i} - 1,0)
-#u_{0}^{j} = 0
-#u_{N}^{j} = Ke^{L + \sigma^2\Tau_j/2}
-from this import s
 import numpy as np
 
-def itera(n, K, x, sigma, DeltaT, DeltaX, L):
-    matriz_J = np.zeros(shape=(2, n))
-    # para i = 0, u = 0
-    matriz_J[0][0] = 0
-    matriz_J[1][0] = 0
-
-    max = maximo(np.exp(x) - 1, 0)
-
-    # para j = 0, u = K*max(e^{x_i} - 1,0)
-    for i in range(0, n): matriz_J[0][i] = K * max
-
-    # para i = n, u = Ke^{L + \sigma^2\Tau_j/2}
-    matriz_J[1][n] = K * np.exp(L + sigma**2 * DeltaT)
-
-    return matriz_J
-
-#Elementos calculados a cada iteração
-def calcula_x(DeltaX, i, L):
-    return i * DeltaX - L
-
-#Calculo de \tau(j)
-def calcula_tau(DeltaTau, j):
-    return DeltaTau * j
-
-#Calculo iterativo de S
-def calcula_S(K, x_i, r, sigma, tau_j):
-    exponencial = np.exp(x_i - (r - sigma**2/2)*tau_j)
-    S = K * exponencial
-    return S
-
-#Calculo iterativo de V
-def calcula_V_i_j(u_i_j, r, tau_j):
-    return u_i_j * np.exp(- 1 * (r * tau_j))
-
-#Cálculo dos Deltas
-def calcula_DeltaX(L, N):
-    return 2*L/N
-
-def calcula_DeltaTau(T, M):
+def deltaT(M, T):
     return T/M
 
-def maximo(x, y):
-    if(x >= y):
-        return x
-    else:
-        return y
+def calcula_u_vetorizado(deltaT, sigma, taxaJuros, L, deltaX, K, N, M):
 
-#Calculo de \tau(t)
-def tau_t(T, t):
-    return T - t
+    # definicao da matriz A
+    A = np.zeros(shape=(N-1, N-1))
 
-#Calculo de x(S,t)
-def x_ideal(S, K, r, sigma, tau_t):
-    return np.log(S/K) + (r - sigma**2/2)*tau_t
+    alpha = sigma**2 * deltaT
+    beta = taxaJuros * deltaT
 
-#Calculo de V(S,t)
-def V_S_t(x_i, x_proximo, V_i_j, x_ideal, V_proximo_j):
-    return ((x_proximo - x_ideal)*V_i_j - (x_i - x_ideal)*V_proximo_j)/(x_proximo - x_i)
+    A[0][0] = 1 - alpha - beta
 
-# calculo de uij com veteorizacao
-def calcula_u_i_j_vetorizado(tau, x, sigma, N, M, deltaTau, deltaX, K, L, tauJ):
+    for i in range(1, N-1):
+        v = 0.5 * (alpha * ((i+2)-1)**2 + beta * ((i+2)-1))
+        d = 1 - alpha * (i+1)**2 - beta
+        l = 0.5 * (alpha * (i-1)**2 - beta * (i-1))
+        
+        A[i][i] = d
+        A[i-1][i] = v
+        A[i][i-1] = l
 
-    # u_j+1 = A*u_j + u_j
-    # A = Δtau/Δx^2 * sigma^2 / 2 * [[-2, 1 ...], 
-    #                               [1, -2, 1, ...] 
-    #                               ... 
-    #                               [... 1, -2, 1]
-    #                               [...     1, -2]]
-
-    # calculo da matriz A
-    const = (deltaTau/(deltaX)**2) * (sigma**2 / 2)
-    A = np.zeros(shape=(N, N))
-
-    for i in range(0, N):
-        A[i][i] = -2 * const
-        if(i < N-1):
-            A[i+1][i] = 1 * const
-            A[i][i+1] = 1 * const
-
-    # definicao da matriz de u
     u = np.zeros(shape=(N, M))
 
-    # calculo da primeira iteracao u0
+    uAtual = np.zeros(shape=(N-1, 1))
+
+    # =================================================================================================================
+    # ATENCAO: o metodo precisa das condicoes de contorno que ainda nao foram implementadas pra funcionar
+    # obs: eu nao sei quais sao as condicoes de contorno pro caso do documento bolado la
+    # =================================================================================================================
+
+    for j in range(M):
+        z = np.zeros(shape=(N-1, 1))
+        z[0][0] = 0.5 * (alpha - beta) * uAtual[0][0]
+        z[N-2][0] = 0.5 * (alpha * (N-1)**2 + beta * (N-1)) * uAtual[N][0] # condicao de contorno que eu nao sei qual é
+
+        uProximo = np.matmul(A, uAtual) + z
+
+        u[:, [j]] = uProximo
+    
+    # calculo da primeira iteracao u0 (nao sei como faz)
     u_inicial = np.zeros(shape=(N, 1))
     for i in range(0, N):
-        xi = i*deltaX - L
-        u_inicial[i][0] = K * maximo(np.exp(xi)-1, 0)
-    
-    u[:,[0]] = u_inicial
+        xi = i * deltaX - L
 
-    # calcula demais iteracoes ate N-1
-    u_atual = u_inicial
-    for j in range(1, M-1):
-        u_prox = np.matmul(A, u_atual) + u_atual
-        u_prox[0][j] = 0
-        u_prox[N][0] = K * np.exp(L + sigma**2 * tauJ/2)
-        
-        # salva resultado na matriz
-        u[:, [j]] = u_prox
-
-        # atual recebe proximo para iteracao seguinte
-        u_atual = u_prox
-
-    return u
-    
-
+        u_inicial[i][0] = K * np.maximum(np.exp(xi) - 1, 0)
