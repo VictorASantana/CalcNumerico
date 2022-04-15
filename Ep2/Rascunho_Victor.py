@@ -109,18 +109,18 @@ def escolheMelhorVij(M, N, L, S, K, r, sigma, T, t):
 
     return i_xProximo, j_tauProximo
 
-def calculaOpcao(sigma, S0, K, N, M, L, T, r, t):
+def calculaOpcao(sigma, S, K, N, M, L, T, r, t):
     # Declaração de variáveis
 
     u = uIterativo(sigma, N, M, K, L, T)
     V = calculaVij(u, T, M, N, r)
 
     # decide qual é o melhor Vij a se retornar
-    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S0, K, r, sigma, T, t)
+    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S, K, r, sigma, T, t)
 
     return V[i_xProximo][j_tauProximo]
 
-def calculaOpcaoInterpolacao(sigma, S0, K, N, M, L, T, r, t, S):
+def calculaOpcaoInterpolacao(sigma, S, K, N, M, L, T, r, t):
     # Declaração de variáveis
     DeltaX = 2*L/N
     DeltaT = T/M
@@ -130,7 +130,7 @@ def calculaOpcaoInterpolacao(sigma, S0, K, N, M, L, T, r, t, S):
     tauAnalitico = T - t
     x_Analitico = np.log(S / K) + (r - sigma ** 2 / 2) * tauAnalitico
     # decide qual é o melhor Vij a se retornar
-    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S0, K, r, sigma, T, t)
+    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S, K, r, sigma, T, t)
     xi = i_xProximo * DeltaX - L
     xi_proximo = (i_xProximo + 1) * DeltaX - L
     V_interpolacao = V_S_t(xi, xi_proximo, V[i_xProximo][j_tauProximo], x_Analitico, V[i_xProximo][j_tauProximo + 1])
@@ -164,5 +164,5 @@ Delta_X = calcula_DeltaX(L, N)
 #Calculando o Vij:
 opcao = calculaOpcao(sigma, S0, K, N, M, L, T, r, 0) + K
 print("A opção é precificada em R$" + str(opcao))
-opcao_inter = calculaOpcaoInterpolacao(sigma, S0, K, N, M, L, T, r, 0, S0) + K
+opcao_inter = calculaOpcaoInterpolacao(sigma, S0, K, N, M, L, T, r, 0) + K
 print("A opção é precificada em R$" + str(opcao_inter))
