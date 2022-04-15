@@ -149,9 +149,9 @@ def calcula_u_i_j_vetorizado(sigma, N, M, deltaTau, deltaX, K, L):
 
     # calculo da primeira iteracao u0
     u_inicial = np.zeros(shape=(N+1, 1))
-    for i in range(0, N):
+    for i in range(0, N+1):
         xi = i * deltaX - L
-        u_inicial[i][0] = K * maximo(np.exp(xi) - 1, 0)
+        u_inicial[i][0] = K * np.maximum(np.exp(xi) - 1, 0)
 
     u[:, [0]] = u_inicial
 
@@ -162,7 +162,7 @@ def calcula_u_i_j_vetorizado(sigma, N, M, deltaTau, deltaX, K, L):
 
         tauJ = j * deltaTau
         u_prox[0][0] = 0
-        u_prox[N][0] = K * np.exp(L + sigma ** 2 * tauJ / 2)
+        u_prox[N][0] = K * np.exp(L + (sigma ** 2) * (tauJ / 2))
 
         # salva resultado na matriz
         u[:, [j]] = u_prox
@@ -199,7 +199,7 @@ def calcuV(sigma, S0, St, K, N, M, L, T, r, t):
     # decide qual é o melhor Vij a se retornar
 
     tauAnalitico = T - t
-    x_Analitico = np.log(St/K) + (r - sigma**2 / 2) * tauAnalitico
+    x_Analitico = np.log(S0/K) + (r - sigma**2 / 2) * tauAnalitico
 
     difX = L+x_Analitico
     for i in range(N+1):
@@ -217,7 +217,8 @@ def calcuV(sigma, S0, St, K, N, M, L, T, r, t):
             difTau = dif
             j_tauProximo = j
 
-    print(u)
+    print(i_xProximo)
+    print(j_tauProximo)
 
     return V[i_xProximo][j_tauProximo]
 
