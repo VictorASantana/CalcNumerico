@@ -4,6 +4,7 @@
 #u_{i}^{0} = Kmax(e^{x_i} - 1,0)
 #u_{0}^{j} = 0
 #u_{N}^{j} = Ke^{L + \sigma^2\Tau_j/2}
+# %%
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -91,14 +92,59 @@ def escolheMelhorVij(M, N, L, S, K, r, sigma, T, t):
 
     return i_xProximo, j_tauProximo
 
-def plotagemGrafico(vetorVij, vetorS):
-    plt.plot(vetorS, vetorVij, color='blue')
+def plotagemGraficoLucroPrejuizo(vetorLucroPrejuizo, vetorS):
+    x = vetorS[0]
+    y = vetorLucroPrejuizo[0]
+
+    plt.figure()
+
+    plt.plot(x, y)
+
     plt.xlabel("USD/BRL no vencimento")
     plt.ylabel("Lucro/Prejuizo (comprador)")
 
-    plt.savefig("grafico_comprador_cenarioFicticio.png")
+    plt.savefig("analise_cenario1.png")
 
     plt.show()
+
+def geraIntervaloS(S0):
+    deltaS = 0.05 * S0
+    Smin = 0.5* S0
+    nIteracoes = 20
+
+    vetorS = np.zeros(shape=(1, nIteracoes))
+
+    for i in range (nIteracoes):
+        vetorS[0][i] = Smin + i * deltaS
+
+    return vetorS
+
+def geraVetorVij(vetorS, sigma, N, M, L, K, T, r, t):
+    tamanhoVetor = vetorS.shape[1]
+    vetorVij = np.zeros(shape=(1, tamanhoVetor))
+
+    for i in range(tamanhoVetor):
+        vetorVij[0][i] = calculaOpcao(sigma, vetorS[0][i], K, N, M, L, T, r, t)
+        print("Carregando...")
+
+    return vetorVij
+
+def geraVetorLucroPrejuizo(vetorVij, quantidadeOpcoes, premio):
+    tamanhoVetor = vetorVij.shape[1]
+    vetorLucroPrejuizo = np.zeros(shape=(1, tamanhoVetor))
+
+    for i in range(tamanhoVetor):
+        vetorLucroPrejuizo[0][i] = quantidadeOpcoes * vetorVij[0][i] - premio
+
+    return vetorLucroPrejuizo
+
+def analiseLucroPrejuizo(sigma, N, M, L, K, T, r, t, S0, quantidadeOpcoes):
+    vetorS = geraIntervaloS(S0)
+    vetorVij = geraVetorVij(vetorS, sigma, N, M, L, K, T, r, t)
+    premio = calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantidadeOpcoes)
+    vetorLucroPrejuizo = geraVetorLucroPrejuizo(vetorVij, quantidadeOpcoes, premio)
+
+    plotagemGraficoLucroPrejuizo(vetorLucroPrejuizo, vetorS)
 
 #Sobre o cálculo de S_t
 #Calcula V_i_j pela equação do calor
@@ -121,18 +167,19 @@ def calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantOpcoes):
     return V[i_xProximo][j_tauProximo] * quantOpcoes
 
 
-def calculaOpcao(sigma, S0, K, N, M, L, T, r, t):
+def calculaOpcao(sigma, S, K, N, M, L, T, r, t):
     # Declaração de variáveis
 
     u = calculaUijVetorizado(sigma, N, M, K, L, T)
     V = calculaVij(u, T, M, N, r)
 
     # decide qual é o melhor Vij a se retornar
-    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S0, K, r, sigma, T, t)
+    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S, K, r, sigma, T, t)
 
     return V[i_xProximo][j_tauProximo]
 
 def imprimeMenu():
+
     print("""
     ********** EP2 de MAP3122 **********
     *** Opcoes no Mercado Financeiro ***
@@ -142,7 +189,12 @@ def imprimeMenu():
     2. Cenario de cambio
     3. Cenario real        
     """)
+
     cenario = int(input("Escolha o cenario desejado: "))
+
+    N = 10000
+    M = 50
+    L = 10
 
     if cenario == 1:
         print("""
@@ -154,18 +206,31 @@ def imprimeMenu():
         
         questao = int(input("Escolha o metodo: "))
 
+        volatilidade = 0.01
+        taxaJuros = 0.01
+        valorAtual = 1
+        quantidadeOpcoes = 1000
+        T = 1
+        precoExecucao = 1
+        t = 0
+
         if questao == 1:
-            opcao = calculaOpcao(0.01, 1, 1, 10000, 50, 10, 1, 0.01, 0) + 1
+            opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t) + 1
             print("A opção é precificada em R$" + str(opcao))
         elif questao == 2:
-            # analise do lucro
-            print("so pra nao aparecer erro rs")
+            t = 0.5
+            analiseLucroPrejuizo(volatilidade, N, M, L, precoExecucao, T, taxaJuros, t, valorAtual, quantidadeOpcoes)
         elif questao == 3:
             # analise do lucro com parametros diferentes
-            print("so pra nao aparecer erro rs")
+            volatilidade = 0.02
+            opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t) + 1
+            print("A opção é precificada em R$" + str(opcao))
         elif questao == 4:
             # analise do lucro com parametros diferentes 2
-            print("so pra nao aparecer erro rs")
+            volatilidade = 0.1
+            taxaJuros = 0.1
+            opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t) + 1
+            print("A opção é precificada em R$" + str(opcao))
         else:
             print("Metodo invalido!")
 
@@ -176,8 +241,9 @@ def imprimeMenu():
         quantidadeOpcoes = 100000
         T = 3/12
         precoExecucao = 5.7
+        t = 0
 
-        premio = calculaPremio(volatilidade, valorAtual, precoExecucao, 10000, 50, 10, T, taxaJuros, 0, quantidadeOpcoes)
+        premio = calculaPremio(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, quantidadeOpcoes)
 
         print(premio)
     elif cenario == 3:
@@ -194,3 +260,5 @@ def imprimeMenu():
         print("Cenario invalido!")
 
 imprimeMenu()
+
+# %%
