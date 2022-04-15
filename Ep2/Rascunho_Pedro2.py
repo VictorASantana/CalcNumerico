@@ -157,7 +157,7 @@ def calcula_u_i_j_vetorizado(sigma, N, M, deltaTau, deltaX, K, L):
 
     # calcula demais iteracoes ate N-1
     u_atual = u_inicial
-    for j in range(1, M - 1):
+    for j in range(1, M+1):
         u_prox = np.matmul(A, u_atual) + u_atual
 
         tauJ = j * deltaTau
@@ -201,8 +201,10 @@ def calcuV(sigma, S0, St, K, N, M, L, T, r, t):
     tauAnalitico = T - t
     x_Analitico = np.log(S0/K) + (r - sigma**2 / 2) * tauAnalitico
 
-    difX = L+x_Analitico
-    for i in range(N+1):
+    print(x_Analitico)
+
+    difX = np.abs(-L - x_Analitico)
+    for i in range(1, N+1):
         xi = i * (2*L/N) - L
         dif = np.abs(xi - x_Analitico)
         if dif < difX:
@@ -210,15 +212,15 @@ def calcuV(sigma, S0, St, K, N, M, L, T, r, t):
             i_xProximo = i
 
     difTau = np.abs(tauAnalitico)
-    for j in range(M+1):
+    for j in range(1, M+1):
         tauJ = j * T / M
         dif = np.abs(tauJ - tauAnalitico)
         if dif < difTau:
             difTau = dif
             j_tauProximo = j
 
-    print(i_xProximo)
-    print(j_tauProximo)
+    #print(i_xProximo)
+    #print(j_tauProximo)
 
     return V[i_xProximo][j_tauProximo]
 
