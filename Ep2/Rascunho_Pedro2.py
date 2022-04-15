@@ -120,6 +120,18 @@ def calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantOpcoes):
 
     return V[i_xProximo][j_tauProximo] * quantOpcoes
 
+
+def calculaOpcao(sigma, S0, K, N, M, L, T, r, t):
+    # Declaração de variáveis
+
+    u = calculaUijVetorizado(sigma, N, M, K, L, T)
+    V = calculaVij(u, T, M, N, r)
+
+    # decide qual é o melhor Vij a se retornar
+    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S0, K, r, sigma, T, t)
+
+    return V[i_xProximo][j_tauProximo]
+
 def imprimeMenu():
     print("""
     ********** EP2 de MAP3122 **********
@@ -143,8 +155,8 @@ def imprimeMenu():
         questao = int(input("Escolha o metodo: "))
 
         if questao == 1:
-            premio = calculaPremio(0.01, 1, 1, 10000, 50, 10, 1, 0.01, 0, 1000)
-            print("O premio calculado é de R$" + str(premio))
+            opcao = calculaOpcao(0.01, 1, 1, 10000, 50, 10, 1, 0.01, 0) + 1
+            print("A opção é precificada em R$" + str(opcao))
         elif questao == 2:
             # analise do lucro
             print("so pra nao aparecer erro rs")

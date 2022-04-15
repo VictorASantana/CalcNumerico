@@ -70,13 +70,6 @@ def itera(n, m, K, x, sigma, DeltaT, DeltaX, L, r, S0, T, t, tau_t):
     return V_i_j[i_escolhido][j_escolhido]
 
 
-#Calculo do Prêmio
-def calcula_premio(n, m, S0, sigma):
-    matriz_Premio = np.zero(shape=(n+1, m+1))
-    #Condições de contorno
-    for j in range(0, m+1):
-        matriz_Premio[j][0] = 0
-
 
 
 #Elementos calculados a cada iteração
@@ -103,12 +96,6 @@ def calcula_DeltaX(L, N):
 
 def calcula_DeltaTau(T, M):
     return T/M
-
-def maximo(x, y):
-    if(x >= y):
-        return x
-    else:
-        return y
 
 #Calculo de \tau(t)
 def tau_t(T, t):
@@ -157,8 +144,8 @@ def calcula_u_i_j_vetorizado(tau, x, sigma, N, M, deltaTau, deltaX, K, L, tauJ):
     u_atual = u_inicial
     for j in range(1, M - 1):
         u_prox = np.matmul(A, u_atual) + u_atual
-        u_prox[0][j] = 0
-        u_prox[N][0] = K * np.exp(L + sigma ** 2 * tauJ / 2)
+        u_prox[j][0] = 0
+        u_prox[N-1][0] = K * np.exp(L + sigma ** 2 * tauJ / 2)
 
         # salva resultado na matriz
         u[:, [j]] = u_prox
@@ -179,45 +166,101 @@ def calcula_u_i_j_vetorizado(tau, x, sigma, N, M, deltaTau, deltaX, K, L, tauJ):
 #Cálculo do Prêmio (By Pedro Bacic):
 #Calcula-se V(S0, t = 0) e multiplica-se pela Quantidade de Ativos = Prêmio
 
-def calcuV(DeltaT, DeltaX, sigma, tau, S0, K, n, m, L, x_S_t, r):
+def uIterativo(sigma, n, m, K, L, T):
     #Declaração de variáveis
-    x_i = np.zeros(shape=(n+1, 1))
-    tau_j = np.zeros(shape=(m+1, 1))
+    DeltaT = T/m
+    DeltaX = 2*L/n
     u_i_j = np.zeros(shape=(n+1, m+1))
-    V_i_j = np.zeros(shape=(n+1, m+1))
-    distj = 0
-    disti = 0
-    iesc = 0
-    jesc = 0
+    const = (DeltaT / (DeltaX) ** 2) * (sigma ** 2 / 2)
 
     for i in range (0, n+1):
-        x_i[i] = calcula_x(DeltaX, i, L)
-        if x_S_t - x_i[i] < disti:
-            disti = x_S_t - x_i[i]
-            iesc = i
-        maxi = maximo(np.exp(x_i[i]) - 1, 0)
+        xi = i * DeltaX - L
         for j in range(0, m+1):
-            tau_j[j] = calcula_tau(DeltaT, j)
+            tauJ = j * DeltaT
             if i == 0:
                 u_i_j[i][j] = 0
             elif i == n:
-                u_i_j[i][j] = K * (np.exp(L + ((sigma**2 * tau_j[j])/2)))
+                u_i_j[i][j] =  K * np.exp(L + (sigma ** 2) * (tauJ / 2))
             elif j == 0:
-                u_i_j[i][j] = K * maxi
+                u_i_j[i][j] = K * np.maximum(np.exp(xi) - 1, 0)
                 u_i_j[i][j + 1] = u_i_j[i][j] + ((DeltaT/DeltaX) * (sigma**2/2))*(u_i_j[i-1][j] - 2*u_i_j[i][j] + u_i_j[i+1][j])
             else:
-                if j + 1 < m:
+                if j < m:
                     u_i_j[i][j+1] = u_i_j[i][j] + ((DeltaT/DeltaX) * (sigma**2/2))*(u_i_j[i-1][j] - 2*u_i_j[i][j] + u_i_j[i+1][j])
-            V_i_j[i][j] = calcula_V_i_j(u_i_j[i][j], r, tau_j[j])
-            if tau - tau_j[j] < distj:
-                distj = tau - tau_j[j]
-                jesc = j
-    return V_i_j[iesc][jesc]
+
+    return u_i_j
+
+
+def calculaVij(u, T, M, N, r):
+    V = np.zeros(shape=(N + 1, N + 1))
+
+    for j in range(M + 1):
+        tauJ = j * T / M
+        V[:, [j]] = u[:, [j]] * np.exp(-1 * r * tauJ)
+
+    return V
+
+def escolheMelhorVij(M, N, L, S, K, r, sigma, T, t):
+    i_xProximo = 0
+    j_tauProximo = 0
+
+    tauAnalitico = T - t
+    x_Analitico = np.log(S/K) + (r - sigma**2 / 2) * tauAnalitico
+
+    difX = np.abs(-L - x_Analitico)
+    for i in range(1, N+1):
+        xi = i * (2*L/N) - L
+        dif = np.abs(xi - x_Analitico)
+        if dif < difX:
+            difX = dif
+            i_xProximo = i
+
+    difTau = np.abs(tauAnalitico)
+    for j in range(1, M+1):
+        tauJ = j * T / M
+        dif = np.abs(tauJ - tauAnalitico)
+        if dif < difTau:
+            difTau = dif
+            j_tauProximo = j
+
+    return i_xProximo, j_tauProximo
+
+def calculaOpcao(sigma, S0, K, N, M, L, T, r, t):
+    # Declaração de variáveis
+
+    u = uIterativo(sigma, N, M, K, L, T)
+    V = calculaVij(u, T, M, N, r)
+
+    # decide qual é o melhor Vij a se retornar
+    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S0, K, r, sigma, T, t)
+
+    return V[i_xProximo][j_tauProximo]
 
 
 
+#Testes
 
+#Teste Exercicio 4.1----------------------------------------------------------------------------------------------------------------------------------------
 
-#Testes:
-V = calcuV(0.04, 0.0002, 0.01, 1, 1, 1, 10000, 25, 10, 0.00995, 0.01)
-print(V)
+#Parâmetros:
+#T = 1, r = 0.01, sigma = 0.01, K = 1, S0 = 1, Quantidade de ativos: 1000
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------------
+#4.1.1) Precificar a opção de compra
+M = 50
+N = 10000
+L = 10
+T = 1
+sigma = 0.01
+r = 0.01
+qAtivos = 1000
+K = 1
+S0 = 1
+tau = tau_t(T, 0)
+x_t = x_ideal(S0, K, r, sigma, tau)
+#Calcular os deltas:
+Delta_tau = calcula_DeltaTau(T, M)
+Delta_X = calcula_DeltaX(L, N)
+#Calculando o Vij:
+opcao = calculaOpcao(sigma, S0, K, N, M, L, T, r, 0) + K
+print("A opção é precificada em R$" + str(opcao))
