@@ -58,6 +58,30 @@ def calculaUijVetorizado(sigma, N, M, K, L, T):
 
     return u
 
+def uIterativo(sigma, n, m, K, L, T):
+    #Declaração de variáveis
+    DeltaT = T/m
+    DeltaX = 2*L/n
+    u_i_j = np.zeros(shape=(n+1, m+1))
+    const = (DeltaT / (DeltaX) ** 2) * (sigma ** 2 / 2)
+
+    for i in range (0, n+1):
+        xi = i * DeltaX - L
+        for j in range(0, m+1):
+            tauJ = j * DeltaT
+            if i == 0:
+                u_i_j[i][j] = 0
+            elif i == n:
+                u_i_j[i][j] =  K * np.exp(L + (sigma ** 2) * (tauJ / 2))
+            elif j == 0:
+                u_i_j[i][j] = K * np.maximum(np.exp(xi) - 1, 0)
+                u_i_j[i][j + 1] = u_i_j[i][j] + ((DeltaT/DeltaX) * (sigma**2/2))*(u_i_j[i-1][j] - 2*u_i_j[i][j] + u_i_j[i+1][j])
+            else:
+                if j < m:
+                    u_i_j[i][j+1] = u_i_j[i][j] + ((DeltaT/DeltaX) * (sigma**2/2))*(u_i_j[i-1][j] - 2*u_i_j[i][j] + u_i_j[i+1][j])
+
+    return u_i_j
+
 def calculaVij(u, T, M, N, r):
     V = np.zeros(shape=(N+1, N+1))
     
@@ -129,6 +153,10 @@ def geraVetorVij(vetorS, sigma, N, M, L, K, T, r, t):
 
     return vetorVij
 
+#Calculo de V(S,t)
+def V_S_t(x_i, x_proximo, V_i_j, x_ideal, V_proximo_j):
+    return ((x_proximo - x_ideal)*V_i_j - (x_i - x_ideal)*V_proximo_j)/(x_proximo - x_i)
+
 def geraVetorLucroPrejuizo(vetorVij, quantidadeOpcoes, premio):
     tamanhoVetor = vetorVij.shape[1]
     vetorLucroPrejuizo = np.zeros(shape=(1, tamanhoVetor))
@@ -166,17 +194,38 @@ def calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantOpcoes):
 
     return V[i_xProximo][j_tauProximo] * quantOpcoes
 
-
-def calculaOpcao(sigma, S, K, N, M, L, T, r, t):
+def calculaOpcao(sigma, S, K, N, M, L, T, r, t, vetorizado):
     # Declaração de variáveis
-
-    u = calculaUijVetorizado(sigma, N, M, K, L, T)
+    if vetorizado:
+        u = calculaUijVetorizado(sigma, N, M, K, L, T)
+    else:
+        u = uIterativo(sigma, N, M, K, L, T)
     V = calculaVij(u, T, M, N, r)
 
     # decide qual é o melhor Vij a se retornar
     i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S, K, r, sigma, T, t)
 
     return V[i_xProximo][j_tauProximo]
+
+def calculaOpcaoInterpolacao(sigma, S, K, N, M, L, T, r, t, vetorizado):
+    # Declaração de variáveis
+    DeltaX = 2*L/N
+    DeltaT = T/M
+    if vetorizado:
+        u = calculaUijVetorizado(sigma, N, M, K, L, T)
+    else:
+        u = uIterativo(sigma, N, M, K, L, T)
+    V = calculaVij(u, T, M, N, r)
+
+    tauAnalitico = T - t
+    x_Analitico = np.log(S / K) + (r - sigma ** 2 / 2) * tauAnalitico
+    # decide qual é o melhor Vij a se retornar
+    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S, K, r, sigma, T, t)
+    xi = i_xProximo * DeltaX - L
+    xi_proximo = (i_xProximo + 1) * DeltaX - L
+    V_interpolacao = V_S_t(xi, xi_proximo, V[i_xProximo][j_tauProximo], x_Analitico, V[i_xProximo][j_tauProximo + 1])
+
+    return V_interpolacao
 
 def imprimeMenu():
 
@@ -192,9 +241,10 @@ def imprimeMenu():
 
     cenario = int(input("Escolha o cenario desejado: "))
 
-    N = 10000
     M = 50
+    N = 10000
     L = 10
+    K = 1
 
     if cenario == 1:
         print("""
@@ -215,8 +265,22 @@ def imprimeMenu():
         t = 0
 
         if questao == 1:
-            opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t) + 1
-            print("A opção é precificada em R$" + str(opcao))
+            print("""
+            Métodos disponíveis:
+            1. Método vetorizado
+            2. Método iterativo
+            """)
+            metodo = int(input("Escolha o metodo desejado: "))
+            if metodo == 1:
+                opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, True) + 1
+                print("A opção é precificada em R$" + str(opcao))
+            elif metodo == 2:
+                opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, False) + 1
+                print("A opção é precificada em R$" + str(opcao))
+                opcaoInterpolar = calculaOpcaoInterpolacao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, False) + K
+                print("A opção é precificada utilizando interpolação em R$" + str(opcaoInterpolar))
+            else:
+                print("Método inválido.")
         elif questao == 2:
             t = 0.5
             analiseLucroPrejuizo(volatilidade, N, M, L, precoExecucao, T, taxaJuros, t, valorAtual, quantidadeOpcoes)
