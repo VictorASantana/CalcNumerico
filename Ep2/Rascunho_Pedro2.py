@@ -183,7 +183,7 @@ def analiseLucroPrejuizo(sigma, N, M, L, K, T, r, t, S0, quantidadeOpcoes):
 #Cálculo do Prêmio (By Pedro Bacic):
 #Calcula-se V(S0, t = 0) e multiplica-se pela Quantidade de Ativos = Prêmio
 
-def calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantOpcoes):
+def calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantOpcoes, vetorizado):
     #Declaração de variáveis
 
     u = calculaUijVetorizado(sigma, N, M, K, L, T)
@@ -196,7 +196,7 @@ def calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantOpcoes):
 
 def calculaOpcao(sigma, S, K, N, M, L, T, r, t, vetorizado):
     # Declaração de variáveis
-    if vetorizado:
+    if vetorizado == 1:
         u = calculaUijVetorizado(sigma, N, M, K, L, T)
     else:
         u = uIterativo(sigma, N, M, K, L, T)
@@ -211,7 +211,7 @@ def calculaOpcaoInterpolacao(sigma, S, K, N, M, L, T, r, t, vetorizado):
     # Declaração de variáveis
     DeltaX = 2*L/N
     DeltaT = T/M
-    if vetorizado:
+    if vetorizado == 1:
         u = calculaUijVetorizado(sigma, N, M, K, L, T)
     else:
         u = uIterativo(sigma, N, M, K, L, T)
@@ -240,6 +240,12 @@ def imprimeMenu():
     """)
 
     cenario = int(input("Escolha o cenario desejado: "))
+    print("""
+    Métodos disponíveis:
+    1. Método vetorizado
+    2. Método iterativo
+    """)
+    metodo = int(input("Escolha o metodo desejado: "))
 
     M = 50
     N = 10000
@@ -265,22 +271,10 @@ def imprimeMenu():
         t = 0
 
         if questao == 1:
-            print("""
-            Métodos disponíveis:
-            1. Método vetorizado
-            2. Método iterativo
-            """)
-            metodo = int(input("Escolha o metodo desejado: "))
-            if metodo == 1:
-                opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, True) + 1
-                print("A opção é precificada em R$" + str(opcao))
-            elif metodo == 2:
-                opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, False) + 1
-                print("A opção é precificada em R$" + str(opcao))
-                opcaoInterpolar = calculaOpcaoInterpolacao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, False) + K
-                print("A opção é precificada utilizando interpolação em R$" + str(opcaoInterpolar))
-            else:
-                print("Método inválido.")
+            opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, metodo) + 1
+            print("A opção é precificada em R$" + str(opcao))
+            opcaoInterpolar = calculaOpcaoInterpolacao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, metodo) + K
+            print("A opção é precificada utilizando interpolação em R$" + str(opcaoInterpolar))
         elif questao == 2:
             t = 0.5
             analiseLucroPrejuizo(volatilidade, N, M, L, precoExecucao, T, taxaJuros, t, valorAtual, quantidadeOpcoes)
