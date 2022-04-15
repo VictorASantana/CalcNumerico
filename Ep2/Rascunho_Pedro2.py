@@ -5,134 +5,19 @@
 #u_{0}^{j} = 0
 #u_{N}^{j} = Ke^{L + \sigma^2\Tau_j/2}
 import numpy as np
-
-def itera(n, m, K, x, sigma, DeltaT, DeltaX, L, r, S0, T, t, tau_t):
-    V_i_j = np.zeros(shape=(n+1, m+1))
-    S_i_j = np.zeros(shape=(n+1, m+1))
-    x_i = np.zeros(shape=(n+1, 1))
-    intervalo = 0
-    maxvalor = 0
-    minvalor = 0
-    nintervalos = 10
-    matriz_J = np.zeros(shape=(n+1, m+1))
-    # para i = 0, u = 0
-    matriz_J[0][0] = 0
-    matriz_J[1][0] = 0
-    tau_j = np.zeros(shape=(m+1, 1))
-    max = maximo(np.exp(x) - 1, 0)
-    tau_escolhido = 0
-    x_escolhido = 0
-    diferenca_tau = 0   
-    diferenca_x = 0
-    i_escolhido = 0
-    j_escolhido = 0
-
-    # para j = 0, u = K*max(e^{x_i} - 1,0)
-    for j in range(1, m+1):
-        matriz_J[0][j] = K * max
-
-    # para i = n, u = Ke^{L + \sigma^2\Tau_j/2}
-
-    for i in range(1, n-1):
-        for j in range(1, m):
-            tau_j[j] = calcula_tau(DeltaT, j)
-            matriz_J[n][j] = K * np.exp(L + sigma ** 2 * tau_j[j]/2)
-            matriz_J[i][j+1] = matriz_J[i][j] + (DeltaT/DeltaX**2)*(sigma**2/2)*(matriz_J[i-1][j] - 2*matriz_J[i][j] + matriz_J[i+1][j])
-
-    for i in range(0, n+1):
-        x_i[i] = calcula_x(DeltaX, i, L)
-        if x - x_i[i] < diferenca_x:
-            diferenca_x = x - x_i[i]
-            x_escolhido = x_i[i]
-            i_escolhido = i
-        for j in range(0, m+1):
-            tau_j[j] = calcula_tau(DeltaT, j)
-            V_i_j[i][j] = calcula_V_i_j(matriz_J[i][j], r, tau_j[j])
-            print(matriz_J[i][j])
-            S_i_j[i][j] = K + V_i_j[i][j]
-            if tau_t - tau_j[j] < diferenca_tau:
-                diferenca_tau = tau_j[j] - tau_t
-                tau_escolhido = tau_j[j]
-                j_escolhido = j
-            if S_i_j[i][j] > maxvalor:
-                maxvalor = S_i_j[i][j]
-            elif S_i_j[i][j] < minvalor:
-                minvalor = S_i_j[i][j]
-            if i == 0:
-                x_i[j] = calcula_x(DeltaX, L, j)
-
-    #Condicionais do S0:
-    if S0 > maxvalor:
-        maxvalor = S0
-    elif S0 < minvalor:
-        minvalor = S0
-
-    intervalo = (maxvalor - minvalor)/nintervalos
-
-    return V_i_j[i_escolhido][j_escolhido]
-
-
-#Calculo do Prêmio
-def calcula_premio(n, m, S0, sigma):
-    matriz_Premio = np.zero(shape=(n+1, m+1))
-    #Condições de contorno
-    for j in range(0, m+1):
-        matriz_Premio[j][0] = 0
-
-
-
-#Elementos calculados a cada iteração
-def calcula_x(DeltaX, i, L):
-    return i * DeltaX - L
-
-#Calculo de \tau(j)
-def calcula_tau(DeltaTau, j):
-    return DeltaTau * j
-
-#Calculo iterativo de S
-def calcula_S(K, x_i, r, sigma, tau_j):
-    exponencial = np.exp(x_i - (r - sigma**2/2)*tau_j)
-    S = K * exponencial
-    return S
-
-#Calculo iterativo de V
-def calcula_V_i_j(u_i_j, r, tau_j):
-    return u_i_j * np.exp(- 1 * (r * tau_j))
-
-#Cálculo dos Deltas
-def calcula_DeltaX(L, N):
-    return 2*L/N
-
-def calcula_DeltaTau(T, M):
-    return T/M
-
-def maximo(x, y):
-    if(x >= y):
-        return x
-    else:
-        return y
-
-#Calculo de \tau(t)
-def tau_t(T, t):
-    return T - t
-
-#Calculo de x(S,t)
-def x_ideal(S, K, r, sigma, tau_t):
-    return np.log(S/K) + (r - sigma**2/2)*tau_t
-
-#Calculo de V(S,t)
-def V_S_t(x_i, x_proximo, V_i_j, x_ideal, V_proximo_j):
-    return ((x_proximo - x_ideal)*V_i_j - (x_i - x_ideal)*V_proximo_j)/(x_proximo - x_i)
-
+import matplotlib.pyplot as plt
 
 # calculo de uij com veteorizacao
-def calcula_u_i_j_vetorizado(sigma, N, M, deltaTau, deltaX, K, L):
+def calculaUijVetorizado(sigma, N, M, K, L, T):
     # u_j+1 = A*u_j + u_j
     # A = Δtau/Δx^2 * sigma^2 / 2 * [[-2, 1 ...],
     #                               [1, -2, 1, ...]
     #                               ...
     #                               [... 1, -2, 1]
     #                               [...     1, -2]]
+
+    deltaTau = T/M
+    deltaX = 2*L/N
 
     # calculo da matriz A
     const = (deltaTau / (deltaX) ** 2) * (sigma ** 2 / 2)
@@ -172,36 +57,21 @@ def calcula_u_i_j_vetorizado(sigma, N, M, deltaTau, deltaX, K, L):
 
     return u
 
-
-
-#Sobre o cálculo de S_t
-#Calcula V_i_j pela equação do calor
-#A iteração X permite obter S_t
-#Constrói-se um intervalo que abarque S_t, tal como S_0, que deve possuir espaçamentos equidistantes
-#A partir dos valores do intervalo de S, calculam-se valores para S_t, de modo que seja possível construir um gráfico que os relacione
-
-#Cálculo do Prêmio (By Pedro Bacic):
-#Calcula-se V(S0, t = 0) e multiplica-se pela Quantidade de Ativos = Prêmio
-
-def calcuV(sigma, S0, St, K, N, M, L, T, r, t):
-    #Declaração de variáveis
-
+def calculaVij(u, T, M, N, r):
     V = np.zeros(shape=(N+1, N+1))
-    u = calcula_u_i_j_vetorizado(sigma, N, M, T/M, 2*L/N, K, L)
-
-    i_xProximo = 0
-    j_tauProximo = 0
-
+    
     for j in range(M+1):
         tauJ = j * T / M
         V[:, [j]] = u[:, [j]] * np.exp(-1 * r * tauJ)
-    
-    # decide qual é o melhor Vij a se retornar
+
+    return V
+
+def escolheMelhorVij(M, N, L, S, K, r, sigma, T, t):
+    i_xProximo = 0
+    j_tauProximo = 0
 
     tauAnalitico = T - t
-    x_Analitico = np.log(S0/K) + (r - sigma**2 / 2) * tauAnalitico
-
-    print(x_Analitico)
+    x_Analitico = np.log(S/K) + (r - sigma**2 / 2) * tauAnalitico
 
     difX = np.abs(-L - x_Analitico)
     for i in range(1, N+1):
@@ -219,11 +89,96 @@ def calcuV(sigma, S0, St, K, N, M, L, T, r, t):
             difTau = dif
             j_tauProximo = j
 
-    #print(i_xProximo)
-    #print(j_tauProximo)
+    return i_xProximo, j_tauProximo
 
-    return V[i_xProximo][j_tauProximo]
+def plotagemGrafico(vetorVij, vetorS):
+    plt.plot(vetorS, vetorVij, color='blue')
+    plt.xlabel("USD/BRL no vencimento")
+    plt.ylabel("Lucro/Prejuizo (comprador)")
 
-#Testes:
-resultadoV = calcuV(0.01, 1, 2, 1, 10000, 50, 10, 1, 0.01, 0)
-print(resultadoV)
+    plt.savefig("grafico_comprador_cenarioFicticio.png")
+
+    plt.show()
+
+#Sobre o cálculo de S_t
+#Calcula V_i_j pela equação do calor
+#A iteração X permite obter S_t
+#Constrói-se um intervalo que abarque S_t, tal como S_0, que deve possuir espaçamentos equidistantes
+#A partir dos valores do intervalo de S, calculam-se valores para S_t, de modo que seja possível construir um gráfico que os relacione
+
+#Cálculo do Prêmio (By Pedro Bacic):
+#Calcula-se V(S0, t = 0) e multiplica-se pela Quantidade de Ativos = Prêmio
+
+def calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantOpcoes):
+    #Declaração de variáveis
+
+    u = calculaUijVetorizado(sigma, N, M, K, L, T)
+    V = calculaVij(u, T, M, N, r)
+    
+    # decide qual é o melhor Vij a se retornar
+    i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S0, K, r, sigma, T, t)
+
+    return V[i_xProximo][j_tauProximo] * quantOpcoes
+
+def imprimeMenu():
+    print("""
+    ********** EP2 de MAP3122 **********
+    *** Opcoes no Mercado Financeiro ***
+        
+    Cenarios disponiveis
+    1. Cenario ficticio
+    2. Cenario de cambio
+    3. Cenario real        
+    """)
+    cenario = int(input("Escolha o cenario desejado: "))
+
+    if cenario == 1:
+        print("""
+        1) Precificacao da opcao de compra
+        2) Analise do lucro/prejuizo da opcao em 6 meses
+        3) Analise com volatilidade a 2 por cento 
+        4) Analise com volatilidade e taxa de juros a 10 por cento
+        """)
+        
+        questao = int(input("Escolha o metodo: "))
+
+        if questao == 1:
+            premio = calculaPremio(0.01, 1, 1, 10000, 50, 10, 1, 0.01, 0, 1000)
+            print("O premio calculado é de R$" + str(premio))
+        elif questao == 2:
+            # analise do lucro
+            print("so pra nao aparecer erro rs")
+        elif questao == 3:
+            # analise do lucro com parametros diferentes
+            print("so pra nao aparecer erro rs")
+        elif questao == 4:
+            # analise do lucro com parametros diferentes 2
+            print("so pra nao aparecer erro rs")
+        else:
+            print("Metodo invalido!")
+
+    elif cenario == 2:
+        volatilidade = 0.1692
+        taxaJuros = 0.1075
+        valorAtual = 5.6376
+        quantidadeOpcoes = 100000
+        T = 3/12
+        precoExecucao = 5.7
+
+        premio = calculaPremio(volatilidade, valorAtual, precoExecucao, 10000, 50, 10, T, taxaJuros, 0, quantidadeOpcoes)
+
+        print(premio)
+    elif cenario == 3:
+        # mudar dados para realidade 
+        volatilidade = 0.1692
+        taxaJuros = 0.1075
+        valorAtual = 5.6376
+        quantidadeOpcoes = 100000
+        T = 3/12
+        precoExecucao = 5.7
+
+
+    else:   
+        print("Cenario invalido!")
+
+imprimeMenu()
