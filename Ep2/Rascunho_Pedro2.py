@@ -5,82 +5,60 @@
 #u_{0}^{j} = 0
 #u_{N}^{j} = Ke^{L + \sigma^2\Tau_j/2}
 # %%
-from ast import Del
 import numpy as np
 import matplotlib.pyplot as plt
 
 # calculo de uij com veteorizacao
-# def calculaUijVetorizado(sigma, N, M, K, L, T):
-#     # u_j+1 = A*u_j + u_j
-#     # A = Δtau/Δx^2 * sigma^2 / 2 * [[-2, 1 ...],
-#     #                               [1, -2, 1, ...]
-#     #                               ...
-#     #                               [... 1, -2, 1]
-#     #                               [...     1, -2]]
-
-#     deltaTau = T/M
-#     deltaX = 2*L/N
-
-#     # calculo da matriz A
-#     const = (deltaTau / (deltaX) ** 2) * (sigma ** 2 / 2)
-#     A = np.zeros(shape=(N+1, N+1))
-
-#     u_inicial = np.zeros(shape=(N+1, 1))
-
-#     A[0][0] = -2 * const
-#     for i in range(1, N+1):
-#         A[i][i] = -2 * const
-#         A[i - 1][i] = const
-#         A[i][i - 1] = const
-        
-#         xi = i * deltaX - L
-#         u_inicial[i][0] = K * np.maximum(np.exp(xi) - 1, 0)
-
-#     # definicao da matriz de u
-#     u = np.zeros(shape=(N+1, M+1))
-#     u[:, [0]] = u_inicial
-
-#     # calcula demais iteracoes ate N-1
-#     u_atual = u_inicial
-#     for j in range(1, M+1):
-#         u_prox = np.dot(A, u_atual) + u_atual
-
-#         tauJ = j * deltaTau
-#         u_prox[0][0] = 0
-#         u_prox[N][0] = K * np.exp(L + (sigma ** 2) * (tauJ / 2))
-
-#         # print("it: " + str(j))
-#         # print(u_prox)
-#         # print("--------------------------------")
-
-#         # salva resultado na matriz
-#         u[:, [j]] = u_prox
-
-#         # atual recebe proximo para iteracao seguinte
-#         u_atual = u_prox
-
-#     return u
-
-def calculaUijVetorizado():
+def calculaUijVetorizado(sigma, N, M, K, L, T):
+    # u_j+1 = A*u_j + u_j
+    # A = Δtau/Δx^2 * sigma^2 / 2 * [[-2, 1 ...],
+    #                               [1, -2, 1, ...]
+    #                               ...
+    #                               [... 1, -2, 1]
+    #                               [...     1, -2]]
 
     deltaTau = T/M
     deltaX = 2*L/N
 
-    constLambda = deltaTau/(deltaX**2)
-
+    # calculo da matriz A
+    const = (deltaTau / (deltaX) ** 2) * (sigma ** 2 / 2)
     A = np.zeros(shape=(N+1, N+1))
 
-    u_inicial = np.zeros(shape=(N+1, 1))    
+    u_inicial = np.zeros(shape=(N+1, 1))
 
-    A[0][0] = 1 + 2 * constLambda
+    A[0][0] = -2 * const
     for i in range(1, N+1):
-        A[i][i] = 1 + 2*constLambda
-        A[i - 1][i] = -constLambda
-        A[i][i - 1] = -constLambda
-    
+        A[i][i] = -2 * const
+        A[i - 1][i] = const
+        A[i][i - 1] = const
+      
         xi = i * deltaX - L
         u_inicial[i][0] = K * np.maximum(np.exp(xi) - 1, 0)
 
+    # definicao da matriz de u
+    u = np.zeros(shape=(N+1, M+1))
+    u[:, [0]] = u_inicial
+
+    # calcula demais iteracoes ate N-1
+    u_atual = u_inicial
+    for j in range(1, M+1):
+        u_prox = np.dot(A, u_atual) + u_atual
+
+        tauJ = j * deltaTau
+        u_prox[0][0] = 0
+        u_prox[N][0] = K * np.exp(L + (sigma ** 2) * (tauJ / 2))
+
+        # print("it: " + str(j))
+        # print(u_prox)
+        # print("--------------------------------")
+
+        # salva resultado na matriz
+        u[:, [j]] = u_prox
+
+        # atual recebe proximo para iteracao seguinte
+        u_atual = u_prox
+
+    return u
 
 
 def uIterativo(sigma, n, m, K, L, T):
@@ -283,7 +261,7 @@ def imprimeMenu():
     """)
     metodo = int(input("Escolha o metodo desejado: "))
 
-    M = 50
+    M = 100
     N = 10000
     L = 10
 
