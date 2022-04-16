@@ -5,65 +5,89 @@
 #u_{0}^{j} = 0
 #u_{N}^{j} = Ke^{L + \sigma^2\Tau_j/2}
 # %%
+from ast import Del
 import numpy as np
 import matplotlib.pyplot as plt
 
 # calculo de uij com veteorizacao
-def calculaUijVetorizado(sigma, N, M, K, L, T):
-    # u_j+1 = A*u_j + u_j
-    # A = Δtau/Δx^2 * sigma^2 / 2 * [[-2, 1 ...],
-    #                               [1, -2, 1, ...]
-    #                               ...
-    #                               [... 1, -2, 1]
-    #                               [...     1, -2]]
+# def calculaUijVetorizado(sigma, N, M, K, L, T):
+#     # u_j+1 = A*u_j + u_j
+#     # A = Δtau/Δx^2 * sigma^2 / 2 * [[-2, 1 ...],
+#     #                               [1, -2, 1, ...]
+#     #                               ...
+#     #                               [... 1, -2, 1]
+#     #                               [...     1, -2]]
+
+#     deltaTau = T/M
+#     deltaX = 2*L/N
+
+#     # calculo da matriz A
+#     const = (deltaTau / (deltaX) ** 2) * (sigma ** 2 / 2)
+#     A = np.zeros(shape=(N+1, N+1))
+
+#     u_inicial = np.zeros(shape=(N+1, 1))
+
+#     A[0][0] = -2 * const
+#     for i in range(1, N+1):
+#         A[i][i] = -2 * const
+#         A[i - 1][i] = const
+#         A[i][i - 1] = const
+        
+#         xi = i * deltaX - L
+#         u_inicial[i][0] = K * np.maximum(np.exp(xi) - 1, 0)
+
+#     # definicao da matriz de u
+#     u = np.zeros(shape=(N+1, M+1))
+#     u[:, [0]] = u_inicial
+
+#     # calcula demais iteracoes ate N-1
+#     u_atual = u_inicial
+#     for j in range(1, M+1):
+#         u_prox = np.dot(A, u_atual) + u_atual
+
+#         tauJ = j * deltaTau
+#         u_prox[0][0] = 0
+#         u_prox[N][0] = K * np.exp(L + (sigma ** 2) * (tauJ / 2))
+
+#         # print("it: " + str(j))
+#         # print(u_prox)
+#         # print("--------------------------------")
+
+#         # salva resultado na matriz
+#         u[:, [j]] = u_prox
+
+#         # atual recebe proximo para iteracao seguinte
+#         u_atual = u_prox
+
+#     return u
+
+def calculaUijVetorizado():
 
     deltaTau = T/M
     deltaX = 2*L/N
 
-    # calculo da matriz A
-    const = (deltaTau / (deltaX) ** 2) * (sigma ** 2 / 2)
+    constLambda = deltaTau/(deltaX**2)
+
     A = np.zeros(shape=(N+1, N+1))
 
-    for i in range(0, N+1):
-        A[i][i] = -2 * const
-        if (i < N):
-            A[i + 1][i] = 1 * const
-            A[i][i + 1] = 1 * const
+    u_inicial = np.zeros(shape=(N+1, 1))    
 
-    # definicao da matriz de u
-    u = np.zeros(shape=(N+1, M+1))
-
-    # calculo da primeira iteracao u0
-    u_inicial = np.zeros(shape=(N+1, 1))
-    for i in range(0, N+1):
+    A[0][0] = 1 + 2 * constLambda
+    for i in range(1, N+1):
+        A[i][i] = 1 + 2*constLambda
+        A[i - 1][i] = -constLambda
+        A[i][i - 1] = -constLambda
+    
         xi = i * deltaX - L
         u_inicial[i][0] = K * np.maximum(np.exp(xi) - 1, 0)
 
-    u[:, [0]] = u_inicial
 
-    # calcula demais iteracoes ate N-1
-    u_atual = u_inicial
-    for j in range(1, M+1):
-        u_prox = np.matmul(A, u_atual) + u_atual
-
-        tauJ = j * deltaTau
-        u_prox[0][0] = 0
-        u_prox[N][0] = K * np.exp(L + (sigma ** 2) * (tauJ / 2))
-
-        # salva resultado na matriz
-        u[:, [j]] = u_prox
-
-        # atual recebe proximo para iteracao seguinte
-        u_atual = u_prox
-
-    return u
 
 def uIterativo(sigma, n, m, K, L, T):
     #Declaração de variáveis
     DeltaT = T/m
     DeltaX = 2*L/n
     u_i_j = np.zeros(shape=(n+1, m+1))
-    const = (DeltaT / (DeltaX) ** 2) * (sigma ** 2 / 2)
 
     for i in range (0, n+1):
         xi = i * DeltaX - L
@@ -134,7 +158,7 @@ def plotagemGraficoLucroPrejuizo(vetorLucroPrejuizo, vetorS):
 def geraIntervaloS(S0):
     deltaS = 0.05 * S0
     Smin = 0.5* S0
-    nIteracoes = 20
+    nIteracoes = 25
 
     vetorS = np.zeros(shape=(1, nIteracoes))
 
@@ -143,12 +167,12 @@ def geraIntervaloS(S0):
 
     return vetorS
 
-def geraVetorVij(vetorS, sigma, N, M, L, K, T, r, t):
+def geraVetorVij(vetorS, sigma, N, M, L, K, T, r, t, vetorizado):
     tamanhoVetor = vetorS.shape[1]
     vetorVij = np.zeros(shape=(1, tamanhoVetor))
 
     for i in range(tamanhoVetor):
-        vetorVij[0][i] = calculaOpcao(sigma, vetorS[0][i], K, N, M, L, T, r, t)
+        vetorVij[0][i] = calculaOpcao(sigma, vetorS[0][i], K, N, M, L, T, r, t, vetorizado)
         print("Carregando...")
 
     return vetorVij
@@ -166,10 +190,10 @@ def geraVetorLucroPrejuizo(vetorVij, quantidadeOpcoes, premio):
 
     return vetorLucroPrejuizo
 
-def analiseLucroPrejuizo(sigma, N, M, L, K, T, r, t, S0, quantidadeOpcoes):
+def analiseLucroPrejuizo(sigma, N, M, L, K, T, r, t, S0, quantidadeOpcoes, vetorizado):
     vetorS = geraIntervaloS(S0)
-    vetorVij = geraVetorVij(vetorS, sigma, N, M, L, K, T, r, t)
-    premio = calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantidadeOpcoes)
+    vetorVij = geraVetorVij(vetorS, sigma, N, M, L, K, T, r, t, vetorizado)
+    premio = calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantidadeOpcoes, vetorizado)
     vetorLucroPrejuizo = geraVetorLucroPrejuizo(vetorVij, quantidadeOpcoes, premio)
 
     plotagemGraficoLucroPrejuizo(vetorLucroPrejuizo, vetorS)
@@ -185,8 +209,11 @@ def analiseLucroPrejuizo(sigma, N, M, L, K, T, r, t, S0, quantidadeOpcoes):
 
 def calculaPremio(sigma, S0, K, N, M, L, T, r, t, quantOpcoes, vetorizado):
     #Declaração de variáveis
+    if vetorizado == 1:
+        u = calculaUijVetorizado(sigma, N, M, K, L, T)
+    else:
+        u = uIterativo(sigma, N, M, K, L, T)
 
-    u = calculaUijVetorizado(sigma, N, M, K, L, T)
     V = calculaVij(u, T, M, N, r)
     
     # decide qual é o melhor Vij a se retornar
@@ -200,6 +227,7 @@ def calculaOpcao(sigma, S, K, N, M, L, T, r, t, vetorizado):
         u = calculaUijVetorizado(sigma, N, M, K, L, T)
     else:
         u = uIterativo(sigma, N, M, K, L, T)
+
     V = calculaVij(u, T, M, N, r)
 
     # decide qual é o melhor Vij a se retornar
@@ -210,19 +238,27 @@ def calculaOpcao(sigma, S, K, N, M, L, T, r, t, vetorizado):
 def calculaOpcaoInterpolacao(sigma, S, K, N, M, L, T, r, t, vetorizado):
     # Declaração de variáveis
     DeltaX = 2*L/N
-    DeltaT = T/M
+
     if vetorizado == 1:
         u = calculaUijVetorizado(sigma, N, M, K, L, T)
     else:
         u = uIterativo(sigma, N, M, K, L, T)
+
     V = calculaVij(u, T, M, N, r)
 
     tauAnalitico = T - t
     x_Analitico = np.log(S / K) + (r - sigma ** 2 / 2) * tauAnalitico
+    
     # decide qual é o melhor Vij a se retornar
     i_xProximo, j_tauProximo = escolheMelhorVij(M, N, L, S, K, r, sigma, T, t)
+
     xi = i_xProximo * DeltaX - L
     xi_proximo = (i_xProximo + 1) * DeltaX - L
+
+    # if(xi > x_Analitico):
+    #     xi_proximo = xi
+    #     xi = (i_xProximo - 1) * DeltaX - L
+
     V_interpolacao = V_S_t(xi, xi_proximo, V[i_xProximo][j_tauProximo], x_Analitico, V[i_xProximo][j_tauProximo + 1])
 
     return V_interpolacao
@@ -250,7 +286,6 @@ def imprimeMenu():
     M = 50
     N = 10000
     L = 10
-    K = 1
 
     if cenario == 1:
         print("""
@@ -273,37 +308,58 @@ def imprimeMenu():
         if questao == 1:
             opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, metodo) + 1
             print("A opção é precificada em R$" + str(opcao))
-            opcaoInterpolar = calculaOpcaoInterpolacao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, metodo) + K
+            opcaoInterpolar = calculaOpcaoInterpolacao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, metodo) + precoExecucao
             print("A opção é precificada utilizando interpolação em R$" + str(opcaoInterpolar))
+
         elif questao == 2:
             t = 0.5
-            analiseLucroPrejuizo(volatilidade, N, M, L, precoExecucao, T, taxaJuros, t, valorAtual, quantidadeOpcoes)
+            analiseLucroPrejuizo(volatilidade, N, M, L, precoExecucao, T, taxaJuros, t, valorAtual, quantidadeOpcoes, metodo)
+
         elif questao == 3:
             # analise do lucro com parametros diferentes
             volatilidade = 0.02
-            opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t) + 1
+            
+            opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, metodo) + precoExecucao
             print("A opção é precificada em R$" + str(opcao))
+            
+            opcaoInterpolar = calculaOpcaoInterpolacao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, metodo) + precoExecucao
+            print("A opção é precificada utilizando interpolação em R$" + str(opcaoInterpolar))
+
+            t = 0.5
+            analiseLucroPrejuizo(volatilidade, N, M, L, precoExecucao, T, taxaJuros, t, valorAtual, quantidadeOpcoes, metodo)
+
         elif questao == 4:
             # analise do lucro com parametros diferentes 2
             volatilidade = 0.1
             taxaJuros = 0.1
-            opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t) + 1
+
+            opcao = calculaOpcao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, metodo) + precoExecucao
             print("A opção é precificada em R$" + str(opcao))
+
+            opcaoInterpolar = calculaOpcaoInterpolacao(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, metodo) + precoExecucao
+            print("A opção é precificada utilizando interpolação em R$" + str(opcaoInterpolar))
+
+            t = 0.5
+            analiseLucroPrejuizo(volatilidade, N, M, L, precoExecucao, T, taxaJuros, t, valorAtual, quantidadeOpcoes, metodo)
         else:
             print("Metodo invalido!")
 
     elif cenario == 2:
+
         volatilidade = 0.1692
         taxaJuros = 0.1075
         valorAtual = 5.6376
         quantidadeOpcoes = 100000
-        T = 3/12
+        T = 0.4
         precoExecucao = 5.7
         t = 0
 
-        premio = calculaPremio(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, quantidadeOpcoes)
-
+        premio = calculaPremio(volatilidade, valorAtual, precoExecucao, N, M, L, T, taxaJuros, t, quantidadeOpcoes, metodo)
         print(premio)
+
+        t = T
+        analiseLucroPrejuizo(volatilidade, N, M, L, precoExecucao, T, taxaJuros, t, valorAtual, quantidadeOpcoes, metodo)
+
     elif cenario == 3:
         # mudar dados para realidade 
         volatilidade = 0.1692
